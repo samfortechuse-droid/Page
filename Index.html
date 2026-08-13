@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeminiLab — Free-Tier API Console</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%238b7bff' d='M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z'/></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@5/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/space-grotesk@5/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5/600.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script>
+tailwind.config = {
+  theme: { extend: {
+    fontFamily: {
+      disp: ['"Space Grotesk"','sans-serif'],
+      sans: ['Inter','sans-serif'],
+      mono: ['"JetBrains Mono"','monospace'],
+    },
+    colors: {
+      ink: '#07080d',
+      panel: '#0d0f17',
+      edge: 'rgba(255,255,255,0.08)',
+      acc1: '#5aa2ff', acc2: '#8b7bff', acc3: '#e46e9f',
+    }
+  }}
+};
+</script>
+<style>
+  *{ scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.15) transparent; }
+  ::-webkit-scrollbar{ width:8px; height:8px } ::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.12); border-radius:8px }
+  body{ background:#07080d; }
+  .bg-glow{ position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(600px 400px at 12% -5%, rgba(90,162,255,.14), transparent 60%),
+      radial-gradient(700px 500px at 95% 8%, rgba(139,123,255,.13), transparent 60%),
+      radial-gradient(800px 600px at 50% 115%, rgba(228,110,159,.08), transparent 60%);
+  }
+  .bg-grid{ position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.35;
+    background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, black 20%, transparent 75%);
+  }
+  .card{ background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.08); border-radius:1.1rem; backdrop-filter: blur(8px); }
+  .grad-text{ background:linear-gradient(100deg,#5aa2ff,#8b7bff 45%,#e46e9f); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .grad-btn{ background:linear-gradient(100deg,#4f8cff,#8b7bff 50%,#e46e9f); }
+  .grad-btn:hover{ filter:brightness(1.12) }
+  .chip{ font-size:.68rem; padding:.18rem .55rem; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05); }
+  input,select,textarea{ color-scheme: dark; }
+  .field{ width:100%; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); border-radius:.7rem; padding:.55rem .8rem; font-size:.83rem; outline:none; transition:border .15s, box-shadow .15s; color:#e8eaf2 }
+  .field:focus{ border-color:#8b7bff; box-shadow:0 0 0 3px rgba(139,123,255,.18) }
+  .btn{ display:inline-flex; align-items:center; gap:.45rem; padding:.55rem 1rem; border-radius:.7rem; font-size:.8rem; font-weight:600; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.05); transition:all .15s; cursor:pointer; color:#e8eaf2 }
+  .btn:hover{ background:rgba(255,255,255,.1) }
+  .btn:disabled{ opacity:.45; cursor:not-allowed }
+  .btn-pri{ background:linear-gradient(100deg,#4f8cff,#8b7bff 50%,#e46e9f); border:none; color:white }
+  .btn-pri:hover{ filter:brightness(1.12); background:linear-gradient(100deg,#4f8cff,#8b7bff 50%,#e46e9f) }
+  .btn-danger{ background:rgba(244,63,94,.14); border-color:rgba(244,63,94,.35); color:#fda4af }
+  .navbtn{ display:flex; align-items:center; gap:.7rem; padding:.58rem .8rem; border-radius:.75rem; font-size:.82rem; font-weight:500; color:#9aa0b4; transition:all .15s; cursor:pointer; white-space:nowrap; border:1px solid transparent }
+  .navbtn:hover{ color:#e8eaf2; background:rgba(255,255,255,.05) }
+  .navbtn.active{ color:#fff; background:rgba(139,123,255,.14); border-color:rgba(139,123,255,.3) }
+  .navbtn svg{ flex:none }
+  .section{ display:none; animation:fadeUp .35s ease }
+  .section.on{ display:block }
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+  .md{ font-size:.86rem; line-height:1.65; color:#dfe2ee }
+  .md p{ margin:.45em 0 } .md pre{ background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.08); padding:.8rem; border-radius:.6rem; overflow-x:auto; font-size:.78rem; margin:.6em 0 }
+  .md code{ font-family:'JetBrains Mono',monospace; font-size:.78em; background:rgba(255,255,255,.08); padding:.1em .35em; border-radius:.3em }
+  .md pre code{ background:none; padding:0 } .md ul,.md ol{ padding-left:1.3em; margin:.45em 0 } .md ul{list-style:disc} .md ol{list-style:decimal}
+  .md h1,.md h2,.md h3,.md h4{ font-weight:700; margin:.7em 0 .3em; color:#fff } .md h1{font-size:1.15em}.md h2{font-size:1.05em}.md h3{font-size:.95em}
+  .md a{ color:#8b9dff; text-decoration:underline } .md table{ border-collapse:collapse; margin:.6em 0; font-size:.8rem } .md th,.md td{ border:1px solid rgba(255,255,255,.12); padding:.3em .6em }
+  .md blockquote{ border-left:3px solid #8b7bff; padding-left:.8em; color:#a8adc2; margin:.5em 0 }
+  pre.json{ white-space:pre-wrap; word-break:break-word; font-family:'JetBrains Mono',monospace; font-size:.72rem; line-height:1.55; color:#c8cde0 }
+  .dot{ width:8px; height:8px; border-radius:99px; display:inline-block }
+  .pulse{ animation:pulse 1.4s infinite } @keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:.35} }
+  .spin{ animation:spin 1s linear infinite } @keyframes spin{ to{ transform:rotate(360deg) } }
+  .wbar{ width:4px; border-radius:4px; background:linear-gradient(180deg,#5aa2ff,#e46e9f); height:6px; transition:height .08s linear }
+  .toast{ animation:toastIn .3s ease; } @keyframes toastIn{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+  .src-chip{ display:inline-flex; align-items:center; gap:.4rem; font-size:.72rem; padding:.3rem .6rem; border-radius:999px; background:rgba(90,162,255,.1); border:1px solid rgba(90,162,255,.25); color:#bcd0ff; text-decoration:none; max-width:240px }
+  .src-chip:hover{ background:rgba(90,162,255,.2) }
+  .typing span{ display:inline-block; width:5px; height:5px; border-radius:99px; background:#8b7bff; margin-right:3px; animation:blink 1.2s infinite }
+  .typing span:nth-child(2){ animation-delay:.2s } .typing span:nth-child(3){ animation-delay:.4s }
+  @keyframes blink{ 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+  details.collapse summary{ cursor:pointer; list-style:none } details.collapse summary::-webkit-details-marker{ display:none }
+  .tbl th{ text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:#7c8296; font-weight:600; padding:.55rem .8rem; border-bottom:1px solid rgba(255,255,255,.08) }
+  .tbl td{ padding:.5rem .8rem; font-size:.78rem; border-bottom:1px solid rgba(255,255,255,.05); color:#c6cadb }
+  .badge{ font-size:.66rem; font-weight:600; padding:.15rem .5rem; border-radius:999px }
+  .b-ok{ background:rgba(52,211,153,.12); color:#6ee7b7; border:1px solid rgba(52,211,153,.3) }
+  .b-err{ background:rgba(244,63,94,.12); color:#fda4af; border:1px solid rgba(244,63,94,.3) }
+  .b-warn{ background:rgba(251,191,36,.12); color:#fcd34d; border:1px solid rgba(251,191,36,.3) }
+  .b-info{ background:rgba(90,162,255,.12); color:#a7c4ff; border:1px solid rgba(90,162,255,.3) }
+  .b-dim{ background:rgba(255,255,255,.06); color:#9aa0b4; border:1px solid rgba(255,255,255,.1) }
+</style>
+</head>
+<body class="font-sans text-[#e8eaf2] min-h-screen">
+<div class="bg-glow"></div><div class="bg-grid"></div>
+
+<!-- ===================== LAYOUT ===================== -->
+<div class="relative z-10 flex flex-col lg:flex-row min-h-screen">
+
+  <!-- SIDEBAR -->
+  <aside class="lg:w-[248px] lg:min-h-screen shrink-0 border-b lg:border-b-0 lg:border-r border-edge bg-panel/60 backdrop-blur-xl p-4 flex flex-col gap-3 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto">
+    <div class="flex items-center gap-2.5 px-1">
+      <div class="w-9 h-9 rounded-xl grad-btn grid place-items-center shadow-lg shadow-[#8b7bff33]">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
+      </div>
+      <div>
+        <div class="font-disp font-bold text-[15px] leading-none">Gemini<span class="grad-text">Lab</span></div>
+        <div class="text-[10px] text-[#7c8296] mt-1">free-tier console · 2026</div>
+      </div>
+    </div>
+
+    <!-- API KEY -->
+    <div class="card p-3">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] font-semibold uppercase tracking-wider text-[#7c8296]">API Key</span>
+        <span id="keyDot" class="dot bg-zinc-600"></span>
+      </div>
+      <div class="flex gap-1.5">
+        <input id="keyInput" type="password" class="field !py-2 !text-[12px] font-mono" placeholder="AIza…" autocomplete="off">
+        <button id="keyEye" class="btn !px-2.5" title="show/hide">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <button id="keyValidate" class="btn btn-pri w-full justify-center mt-2 !py-2 !text-[12px]">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>
+        Validate key
+      </button>
+      <p class="text-[10px] text-[#7c8296] mt-2 leading-relaxed">Stored only in your browser (localStorage). Get a key at <a class="text-[#8b9dff] underline" href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a></p>
+    </div>
+
+    <!-- NAV -->
+    <nav class="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0" id="navBar">
+      <div class="navbtn active" data-nav="overview"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview &amp; Limits</div>
+      <div class="navbtn" data-nav="chat"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 01-8 8H4l2-3a8 8 0 1115-5z"/></svg>LLM Chat</div>
+      <div class="navbtn" data-nav="images"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5-11 11"/></svg>Image Studio</div>
+      <div class="navbtn" data-nav="voice"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 013 3v6a3 3 0 01-6 0V5a3 3 0 013-3z"/><path d="M19 11a7 7 0 01-14 0M12 18v4"/></svg>TTS Voice</div>
+      <div class="navbtn" data-nav="live"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg>Live Realtime</div>
+      <div class="navbtn" data-nav="video"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="14" height="14" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>Video (Veo)</div>
+      <div class="navbtn" data-nav="embed"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="8" r="2.5"/><circle cx="10" cy="18" r="2.5"/><path d="M8 7.5l7.5 0M7 8.2l2 7.5M16.5 10l-4.6 6.4"/></svg>Embeddings</div>
+      <div class="navbtn" data-nav="tools"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Grounding Tools</div>
+      <div class="navbtn" data-nav="suite"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2h6M10 2v6l-5 9a3 3 0 002.6 4.5h8.8A3 3 0 0019 17l-5-9V2"/></svg>Test Suite</div>
+      <div class="navbtn" data-nav="raw"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6l-6 6 6 6M16 6l6 6-6 6"/></svg>Raw API</div>
+    </nav>
+
+    <div class="mt-auto pt-2 hidden lg:block">
+      <button id="inspOpen" class="btn w-full justify-between !text-[12px]">
+        <span class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17V7a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/><path d="M8 9h8M8 13h5"/></svg>Traffic Inspector</span>
+        <span id="inspBadge" class="badge b-info">0</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 min-w-0 p-4 md:p-7">
+
+    <!-- header strip -->
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <div>
+        <h1 id="secTitle" class="font-disp font-bold text-xl md:text-2xl">Overview &amp; Limits</h1>
+        <p id="secSub" class="text-[12px] text-[#7c8296] mt-0.5">Your key, your quotas, everything the free tier offers.</p>
+      </div>
+      <div class="flex gap-2">
+        <div class="card px-3 py-1.5 text-[11px] flex items-center gap-2"><span class="dot bg-[#5aa2ff]"></span><span id="statReq">0</span> requests</div>
+        <div class="card px-3 py-1.5 text-[11px] flex items-center gap-2"><span class="dot bg-emerald-400"></span><span id="statOk">0</span> ok</div>
+        <div class="card px-3 py-1.5 text-[11px] flex items-center gap-2"><span class="dot bg-[#e46e9f]"></span><span id="statTok">0</span> tokens</div>
+        <button id="inspOpenMobile" class="btn lg:hidden !px-3 !py-1.5 !text-[11px]">Log <span id="inspBadge2" class="badge b-info">0</span></button>
+      </div>
+    </div>
+
+    <!-- ============ OVERVIEW ============ -->
+    <section id="sec-overview" class="section on">
+      <div class="grid md:grid-cols-3 gap-4 mb-5">
+        <div class="card p-5 md:col-span-2">
+          <div class="flex items-center gap-2 mb-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="grad-text"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
+            <h3 class="font-disp font-semibold text-[15px]">Run every free-tier capability from one place</h3>
+          </div>
+          <p class="text-[12.5px] text-[#9aa0b4] leading-relaxed mb-4">Chat with every Gemini LLM, generate images with Nano Banana &amp; Imagen, synthesize speech, talk in real time over the Live API, embed text, ground answers with Google Search &amp; Maps, and generate video with Veo. Every request/response is captured in the Traffic Inspector.</p>
+          <div class="flex flex-wrap gap-2">
+            <button class="btn btn-pri" data-goto="suite">▶ Run full test suite</button>
+            <button class="btn" data-goto="chat">Open LLM Chat</button>
+            <button class="btn" id="fetchModelsBtn">⟳ Fetch models from API</button>
+          </div>
+          <div id="serverModelsBox" class="hidden mt-4 max-h-40 overflow-y-auto card !bg-black/20 p-3 text-[11px] font-mono text-[#9aa0b4]"></div>
+        </div>
+        <div class="card p-5">
+          <h3 class="font-disp font-semibold text-[15px] mb-3">Session health</h3>
+          <div class="space-y-2.5 text-[12px]">
+            <div class="flex justify-between"><span class="text-[#7c8296]">Key status</span><span id="keyStatusTxt" class="font-semibold">not checked</span></div>
+            <div class="flex justify-between"><span class="text-[#7c8296]">Requests</span><span id="ovReq" class="font-mono">0</span></div>
+            <div class="flex justify-between"><span class="text-[#7c8296]">Errors</span><span id="ovErr" class="font-mono">0</span></div>
+            <div class="flex justify-between"><span class="text-[#7c8296]">Tokens used</span><span id="ovTok" class="font-mono">0</span></div>
+            <div class="flex justify-between"><span class="text-[#7c8296]">Inspector entries</span><span id="ovLog" class="font-mono">0</span></div>
+          </div>
+          <button id="resetSession" class="btn w-full justify-center mt-4 !text-[12px]">Reset session</button>
+        </div>
+      </div>
+
+      <div class="card overflow-hidden">
+        <div class="px-5 py-4 border-b border-edge flex items-center justify-between">
+          <h3 class="font-disp font-semibold text-[15px]">Free-tier rate limits <span class="text-[#7c8296] font-sans text-[11px] font-normal">· live usage tracked per model</span></h3>
+          <input id="limitFilter" class="field !w-52 !py-1.5 !text-[12px]" placeholder="Filter models…">
+        </div>
+        <div class="overflow-x-auto">
+          <table class="tbl w-full min-w-[760px]">
+            <thead><tr><th>Model</th><th>Category</th><th>RPM</th><th>TPM</th><th>RPD</th><th>Status</th></tr></thead>
+            <tbody id="limitsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CHAT ============ -->
+    <section id="sec-chat" class="section">
+      <div class="grid lg:grid-cols-[300px_1fr] gap-4">
+        <div class="space-y-4">
+          <div class="card p-4 space-y-3">
+            <h3 class="font-disp font-semibold text-[14px]">Configuration</h3>
+            <label class="block text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">Model</label>
+            <select id="chatModel" class="field"></select>
+            <label class="block text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">System instruction</label>
+            <textarea id="chatSys" class="field" rows="2" placeholder="You are a helpful assistant…"></textarea>
+            <div class="grid grid-cols-2 gap-2">
+              <div><label class="text-[11px] text-[#7c8296]">Temperature <span id="tv" class="text-[#8b9dff] font-mono">0.7</span></label>
+                <input id="chatTemp" type="range" min="0" max="2" step="0.1" value="0.7" class="w-full accent-[#8b7bff]"></div>
+              <div><label class="text-[11px] text-[#7c8296]">Max tokens</label>
+                <input id="chatMaxTok" type="number" class="field" value="2048" min="1"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 items-end">
+              <div><label class="text-[11px] text-[#7c8296]">Top P</label>
+                <input id="chatTopP" type="number" class="field" value="0.95" step="0.05" min="0" max="1"></div>
+              <div><label class="text-[11px] text-[#7c8296]">Think budget</label>
+                <input id="chatThink" type="number" class="field" value="0" min="-1" title="-1 = dynamic, 0 = off"></div>
+            </div>
+            <label class="flex items-center gap-2 text-[12px] cursor-pointer"><input id="chatStream" type="checkbox" checked class="accent-[#8b7bff]"> Stream response (SSE)</label>
+          </div>
+          <div class="card p-4 text-[11px] text-[#7c8296] leading-relaxed">
+            Uses <code class="text-[#a7c4ff]">:generateContent</code> (<code class="text-[#a7c4ff]">alt=sse</code> when streaming). Grounding tools live in the <b class="text-[#c6cadb]">Grounding Tools</b> tab. Full payloads → Traffic Inspector.
+          </div>
+        </div>
+
+        <div class="card flex flex-col h-[calc(100vh-190px)] min-h-[480px] overflow-hidden">
+          <div class="px-4 py-3 border-b border-edge flex items-center justify-between">
+            <span id="chatModelLbl" class="font-mono text-[11px] text-[#8b9dff]">gemini-3.5-flash-lite</span>
+            <button id="chatClear" class="btn !py-1 !px-2.5 !text-[11px]">Clear</button>
+          </div>
+          <div id="chatMsgs" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+          <div class="p-3 border-t border-edge">
+            <div class="flex gap-2 items-end">
+              <textarea id="chatInput" class="field resize-none" rows="2" placeholder="Message Gemini… (Enter to send, Shift+Enter for newline)"></textarea>
+              <button id="chatStop" class="btn btn-danger hidden !py-3">■</button>
+              <button id="chatSend" class="btn btn-pri !py-3">Send ➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ IMAGES ============ -->
+    <section id="sec-images" class="section">
+      <div class="grid lg:grid-cols-[340px_1fr] gap-4">
+        <div class="space-y-4">
+          <div class="card p-4 space-y-3">
+            <h3 class="font-disp font-semibold text-[14px]">Prompt</h3>
+            <select id="imgModel" class="field"></select>
+            <textarea id="imgPrompt" class="field" rows="4" placeholder="A nano-banana mascot astronaut floating in a neon nebula, cinematic lighting…"></textarea>
+            <div id="imgNbOpts" class="space-y-3">
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-[11px] text-[#7c8296]">Aspect ratio</label>
+                  <select id="imgAspect" class="field"><option>1:1</option><option>2:3</option><option>3:2</option><option>3:4</option><option>4:3</option><option>4:5</option><option>5:4</option><option>9:16</option><option>16:9</option><option>21:9</option></select></div>
+                <div><label class="text-[11px] text-[#7c8296]">Image size</label>
+                  <select id="imgSize" class="field"><option value="">default (1K)</option><option>2K</option><option>4K</option></select></div>
+              </div>
+              <div>
+                <label class="text-[11px] text-[#7c8296] block mb-1">Reference image (edit / img2img — optional)</label>
+                <div class="flex gap-2 items-center">
+                  <input id="imgFile" type="file" accept="image/*" class="hidden"><button id="imgFileBtn" class="btn !text-[11px]">📎 Attach</button>
+                  <span id="imgFileName" class="text-[11px] text-[#7c8296] truncate">none</span>
+                  <img id="imgFilePrev" class="h-8 w-8 rounded object-cover hidden border border-edge">
+                </div>
+              </div>
+            </div>
+            <div id="imgImOpts" class="hidden space-y-3">
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-[11px] text-[#7c8296]">Aspect</label>
+                  <select id="imgImAspect" class="field"><option>1:1</option><option>16:9</option><option>9:16</option><option>3:4</option><option>4:3</option></select></div>
+                <div><label class="text-[11px] text-[#7c8296]">Images</label>
+                  <select id="imgCount" class="field"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+              </div>
+              <label class="text-[11px] text-[#7c8296] block mb-1">Negative prompt</label>
+              <input id="imgNeg" class="field" placeholder="blurry, low quality…">
+            </div>
+            <button id="imgGen" class="btn btn-pri w-full justify-center">✨ Generate</button>
+            <div id="imgStatus" class="text-[11px] text-[#7c8296]"></div>
+          </div>
+        </div>
+        <div class="card p-4 min-h-[420px]">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-disp font-semibold text-[14px]">Results</h3>
+            <button id="imgClear" class="btn !py-1 !px-2.5 !text-[11px]">Clear</button>
+          </div>
+          <div id="imgResults" class="grid sm:grid-cols-2 gap-4 content-start"></div>
+          <div id="imgEmpty" class="h-64 grid place-items-center text-center">
+            <div class="text-[#565c72]">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="mx-auto mb-2 opacity-60"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5-11 11"/></svg>
+              <p class="text-[12px]">Generated images will appear here.<br>Nano Banana models support editing via a reference image.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TTS ============ -->
+    <section id="sec-voice" class="section">
+      <div class="grid lg:grid-cols-[340px_1fr] gap-4">
+        <div class="card p-4 space-y-3">
+          <h3 class="font-disp font-semibold text-[14px]">Speech settings</h3>
+          <label class="text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">TTS model</label>
+          <select id="ttsModel" class="field">
+            <option value="gemini-3.1-flash-tts-preview">Gemini 3.1 Flash TTS (preview)</option>
+            <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash TTS</option>
+            <option value="gemini-2.5-pro-preview-tts">Gemini 2.5 Pro TTS</option>
+          </select>
+          <label class="text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">Voice (30 prebuilt)</label>
+          <select id="ttsVoice" class="field"></select>
+          <label class="flex items-center gap-2 text-[12px] cursor-pointer"><input id="ttsMulti" type="checkbox" class="accent-[#8b7bff]"> Multi-speaker (speakers “Joe” &amp; “Jane”)</label>
+          <div id="ttsVoice2Wrap" class="hidden"><label class="text-[11px] text-[#7c8296]">Voice for Jane</label><select id="ttsVoice2" class="field"></select></div>
+          <p class="text-[11px] text-[#7c8296] leading-relaxed">Tip: control style inside the text — e.g. <i class="text-[#c6cadb]">“Say cheerfully: Have a wonderful day!”</i>. Gemini 3.1 Flash TTS supports 200+ expressive tags like <span class="chip">[enthusiasm]</span>.</p>
+        </div>
+        <div class="space-y-4">
+          <div class="card p-4 space-y-3">
+            <h3 class="font-disp font-semibold text-[14px]">Script</h3>
+            <textarea id="ttsText" class="field" rows="5">Say warmly: Welcome to GeminiLab, where every free-tier model comes alive.</textarea>
+            <button id="ttsGen" class="btn btn-pri">🔊 Synthesize speech</button>
+            <div id="ttsStatus" class="text-[11px] text-[#7c8296]"></div>
+          </div>
+          <div id="ttsResult" class="card p-4 hidden">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-disp font-semibold text-[14px]">Audio (PCM 24 kHz → WAV)</h3>
+              <a id="ttsDl" class="btn !py-1.5 !text-[11px]" download="gemini-tts.wav">⬇ Download WAV</a>
+            </div>
+            <audio id="ttsAudio" controls class="w-full"></audio>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LIVE ============ -->
+    <section id="sec-live" class="section">
+      <div class="grid lg:grid-cols-[320px_1fr] gap-4">
+        <div class="space-y-4">
+          <div class="card p-4 space-y-3">
+            <h3 class="font-disp font-semibold text-[14px]">Live session</h3>
+            <label class="text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">Live model</label>
+            <select id="liveModel" class="field">
+              <option value="gemini-3.1-flash-live-preview">Gemini 3.1 Flash Live</option>
+              <option value="gemini-3-flash-live-preview">Gemini 3 Flash Live</option>
+              <option value="gemini-2.5-flash-native-audio-preview-12-2025">Gemini 2.5 Flash Native Audio Dialog</option>
+              <option value="gemini-3.5-live-translate-preview">Gemini 3.5 Live Translate</option>
+            </select>
+            <label class="text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">Assistant voice</label>
+            <select id="liveVoice" class="field"></select>
+            <label class="text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">System instruction</label>
+            <textarea id="liveSys" class="field" rows="3">You are a friendly realtime voice companion. Keep replies short and conversational.</textarea>
+            <div class="flex gap-2">
+              <button id="liveStart" class="btn btn-pri flex-1 justify-center">🎙 Start session</button>
+              <button id="liveEnd" class="btn btn-danger flex-1 justify-center hidden">■ End</button>
+            </div>
+            <div id="liveStatus" class="text-[11px] text-[#7c8296]">Idle — mic + speakers required.</div>
+            <div id="liveStats" class="hidden text-[11px] font-mono text-[#7c8296] space-y-1"></div>
+          </div>
+          <div class="card p-4 text-[11px] text-[#7c8296] leading-relaxed">
+            WebSocket: <code class="text-[#a7c4ff] break-all">wss://…BidiGenerateContent</code>. Mic → 16 kHz PCM16 chunks up, 24 kHz native audio down, with automatic turn detection and in/out transcriptions.
+          </div>
+        </div>
+        <div class="card flex flex-col h-[calc(100vh-190px)] min-h-[480px] overflow-hidden">
+          <div class="px-4 py-3 border-b border-edge flex items-center gap-3">
+            <span id="liveDot" class="dot bg-zinc-600"></span>
+            <span id="liveState" class="text-[12px] font-semibold">Not connected</span>
+            <span id="liveTimer" class="ml-auto font-mono text-[12px] text-[#7c8296]">00:00</span>
+          </div>
+          <div class="flex justify-center items-end gap-[3px] h-16 py-3" id="waveBox"></div>
+          <div class="flex-1 grid grid-rows-2 gap-3 px-4 pb-3 min-h-0">
+            <div class="card !bg-black/20 p-3 overflow-y-auto">
+              <div class="text-[10px] uppercase tracking-wider text-[#7c8296] mb-1.5">You (input transcription)</div>
+              <div id="liveUserTx" class="text-[13px] leading-relaxed text-[#dfe2ee]"></div>
+            </div>
+            <div class="card !bg-black/20 p-3 overflow-y-auto">
+              <div class="text-[10px] uppercase tracking-wider text-[#8b7bff] mb-1.5">Gemini (output transcription)</div>
+              <div id="liveModelTx" class="text-[13px] leading-relaxed text-[#dfe2ee]"></div>
+            </div>
+          </div>
+          <div class="p-3 border-t border-edge flex gap-2">
+            <input id="liveText" class="field" placeholder="Or type a message mid-session…">
+            <button id="liveSendText" class="btn btn-pri">Send</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VIDEO ============ -->
+    <section id="sec-video" class="section">
+      <div class="grid lg:grid-cols-[340px_1fr] gap-4">
+        <div class="card p-4 space-y-3 h-fit">
+          <h3 class="font-disp font-semibold text-[14px]">Veo settings</h3>
+          <select id="videoModel" class="field">
+            <option value="veo-3.1-lite-generate-preview">Veo 3.1 Lite</option>
+            <option value="veo-3.1-generate-preview">Veo 3.1</option>
+            <option value="veo-3.0-lite-generate-001">Veo 3 Lite</option>
+            <option value="veo-3.0-fast-generate-001">Veo 3 Fast</option>
+            <option value="veo-3.0-generate-001">Veo 3</option>
+          </select>
+          <textarea id="videoPrompt" class="field" rows="4" placeholder="A slow cinematic dolly shot through a bioluminescent forest at dawn…"></textarea>
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="text-[11px] text-[#7c8296]">Aspect</label><select id="videoAspect" class="field"><option>16:9</option><option>9:16</option></select></div>
+            <div><label class="text-[11px] text-[#7c8296]">People</label><select id="videoPeople" class="field"><option value="allow_adult">adults only</option><option value="dont_allow">block</option></select></div>
+          </div>
+          <input id="videoNeg" class="field" placeholder="Negative prompt (optional)">
+          <button id="videoGen" class="btn btn-pri w-full justify-center">🎬 Generate video</button>
+          <div id="videoStatus" class="text-[11px] text-[#7c8296]">Uses :predictLongRunning + operation polling (~1–5 min). Free tier may return quota errors — you’ll see the exact server response in the Inspector.</div>
+        </div>
+        <div class="card p-4 min-h-[420px] grid place-items-center">
+          <div id="videoResult" class="w-full text-center text-[#565c72]">
+            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" class="mx-auto mb-2 opacity-60"><rect x="2" y="5" width="14" height="14" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>
+            <p class="text-[12px]" id="videoEmptyTxt">Your generated video will render here.<br><span id="videoTimer" class="font-mono text-[#8b9dff]"></span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ EMBEDDINGS ============ -->
+    <section id="sec-embed" class="section">
+      <div class="card p-4 mb-4 flex flex-wrap gap-3 items-end">
+        <div><label class="text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">Model</label>
+          <select id="embModel" class="field"><option value="gemini-embedding-001">Gemini Embedding 1 (gemini-embedding-001)</option><option value="gemini-embedding-2-preview">Gemini Embedding 2 (gemini-embedding-2-preview)</option><option value="gemini-embedding-2">Gemini Embedding 2 (stable)</option></select></div>
+        <div><label class="text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">Dimensions</label>
+          <select id="embDim" class="field"><option>128</option><option>256</option><option>512</option><option selected>768</option><option>1536</option><option>3072</option></select></div>
+        <div id="embTaskWrap"><label class="text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">Task type (Emb-1)</label>
+          <select id="embTask" class="field"><option value="">— none —</option><option>SEMANTIC_SIMILARITY</option><option>CLASSIFICATION</option><option>CLUSTERING</option><option>RETRIEVAL_QUERY</option><option>RETRIEVAL_DOCUMENT</option><option>QUESTION_ANSWERING</option><option>FACT_VERIFICATION</option><option>CODE_RETRIEVAL_QUERY</option></select></div>
+        <button id="embRun" class="btn btn-pri ml-auto">⇄ Embed &amp; compare</button>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <div class="card p-4"><label class="text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">Text A</label>
+          <textarea id="embA" class="field mt-2" rows="4">How do I bake a chocolate cake?</textarea></div>
+        <div class="card p-4"><label class="text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">Text B</label>
+          <textarea id="embB" class="field mt-2" rows="4">What is the recipe for a chocolate cake?</textarea></div>
+      </div>
+      <div id="embOut" class="card p-5 hidden">
+        <div class="flex flex-wrap items-center gap-4 mb-4">
+          <div class="text-[12px] text-[#7c8296]">Cosine similarity</div>
+          <div id="embSim" class="font-disp font-bold text-3xl grad-text">—</div>
+          <div class="flex-1 min-w-[160px] h-2.5 rounded-full bg-white/5 overflow-hidden"><div id="embSimBar" class="h-full grad-btn rounded-full transition-all duration-700" style="width:0%"></div></div>
+          <div id="embMeta" class="font-mono text-[11px] text-[#7c8296]"></div>
+          <button id="embCopy" class="btn !py-1.5 !text-[11px]">Copy vectors</button>
+        </div>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div><div class="text-[11px] text-[#7c8296] mb-1">Vector A (first 64 dims)</div><div id="embBarsA" class="flex items-end gap-[2px] h-16"></div></div>
+          <div><div class="text-[11px] text-[#7c8296] mb-1">Vector B (first 64 dims)</div><div id="embBarsB" class="flex items-end gap-[2px] h-16"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TOOLS / GROUNDING ============ -->
+    <section id="sec-tools" class="section">
+      <div class="grid lg:grid-cols-[340px_1fr] gap-4">
+        <div class="card p-4 space-y-3 h-fit">
+          <h3 class="font-disp font-semibold text-[14px]">Tools to attach</h3>
+          <label class="text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">Model</label>
+          <select id="toolModel" class="field"></select>
+          <label class="flex items-center gap-2 text-[13px] cursor-pointer"><input id="toolSearch" type="checkbox" checked class="accent-[#8b7bff]"> <span>🔎 Google Search grounding</span></label>
+          <label class="flex items-center gap-2 text-[13px] cursor-pointer"><input id="toolMaps" type="checkbox" class="accent-[#8b7bff]"> <span>🗺 Google Maps grounding</span></label>
+          <div id="mapsOpts" class="hidden pl-6 space-y-2">
+            <div class="grid grid-cols-2 gap-2">
+              <input id="toolLat" class="field" placeholder="latitude" value="34.050481">
+              <input id="toolLng" class="field" placeholder="longitude" value="-118.248526">
+            </div>
+            <button id="toolGeo" class="btn !py-1.5 !text-[11px]">📍 Use my location</button>
+          </div>
+          <label class="flex items-center gap-2 text-[13px] cursor-pointer"><input id="toolUrl" type="checkbox" class="accent-[#8b7bff]"> <span>🔗 URL context</span></label>
+          <div id="urlOpts" class="hidden pl-6"><textarea id="toolUrls" class="field" rows="2" placeholder="https://example.com/page (one per line)"></textarea></div>
+          <label class="flex items-center gap-2 text-[13px] cursor-pointer"><input id="toolCode" type="checkbox" class="accent-[#8b7bff]"> <span>🧮 Code execution (Python)</span></label>
+        </div>
+        <div class="space-y-4">
+          <div class="card p-4">
+            <textarea id="toolPrompt" class="field" rows="3">What are the latest Gemini API announcements, and which Italian restaurants are within a 15-minute walk from me?</textarea>
+            <div class="flex gap-2 mt-3">
+              <button id="toolRun" class="btn btn-pri">⚡ Run with tools</button>
+              <span id="toolStatus" class="text-[11px] text-[#7c8296] self-center"></span>
+            </div>
+          </div>
+          <div id="toolOut" class="card p-4 hidden space-y-4">
+            <div><div class="text-[10px] uppercase tracking-wider text-[#7c8296] mb-2">Answer</div><div id="toolAnswer" class="md"></div></div>
+            <div id="toolSrcWrap" class="hidden"><div class="text-[10px] uppercase tracking-wider text-[#7c8296] mb-2">Grounded sources / places</div><div id="toolSources" class="flex flex-wrap gap-2"></div></div>
+            <div id="toolCodeWrap" class="hidden"><div class="text-[10px] uppercase tracking-wider text-[#7c8296] mb-2">Code execution</div><pre class="json" id="toolCodeOut"></pre></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TEST SUITE ============ -->
+    <section id="sec-suite" class="section">
+      <div class="card p-4 mb-4">
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+          <h3 class="font-disp font-semibold text-[14px] mr-2">Test groups</h3>
+          <label class="chip cursor-pointer flex items-center gap-1.5"><input type="checkbox" class="suiteChk accent-[#8b7bff]" value="text" checked> Text models</label>
+          <label class="chip cursor-pointer flex items-center gap-1.5"><input type="checkbox" class="suiteChk accent-[#8b7bff]" value="embed" checked> Embeddings</label>
+          <label class="chip cursor-pointer flex items-center gap-1.5"><input type="checkbox" class="suiteChk accent-[#8b7bff]" value="tts" checked> TTS</label>
+          <label class="chip cursor-pointer flex items-center gap-1.5"><input type="checkbox" class="suiteChk accent-[#8b7bff]" value="meta" checked> Meta (list + countTokens)</label>
+          <label class="chip cursor-pointer flex items-center gap-1.5"><input type="checkbox" class="suiteChk accent-[#8b7bff]" value="ground"> Search grounding</label>
+          <label class="chip cursor-pointer flex items-center gap-1.5"><input type="checkbox" class="suiteChk accent-[#8b7bff]" value="image"> Image generation</label>
+          <div class="ml-auto flex gap-2">
+            <button id="suiteRun" class="btn btn-pri">▶ Run tests</button>
+            <button id="suiteStop" class="btn btn-danger hidden">Stop</button>
+            <button id="suiteExport" class="btn">Export JSON</button>
+          </div>
+        </div>
+        <div class="h-2 rounded-full bg-white/5 overflow-hidden"><div id="suiteBar" class="h-full grad-btn rounded-full transition-all duration-300" style="width:0%"></div></div>
+        <div id="suiteSummary" class="mt-3 text-[12px] text-[#9aa0b4]">Sequential execution with 400 ms spacing to respect free-tier RPM. 429 = quota limited (expected on free tier).</div>
+      </div>
+      <div class="card overflow-hidden">
+        <div class="overflow-x-auto"><table class="tbl w-full min-w-[720px]">
+          <thead><tr><th>Test</th><th>Model</th><th>Result</th><th>Latency</th><th>Detail</th></tr></thead>
+          <tbody id="suiteResults"><tr><td colspan="5" class="text-center !py-10 text-[#565c72]">No tests run yet.</td></tr></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ============ RAW ============ -->
+    <section id="sec-raw" class="section">
+      <div class="grid lg:grid-cols-2 gap-4">
+        <div class="card p-4 space-y-3">
+          <h3 class="font-disp font-semibold text-[14px]">Request builder</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <select id="rawEndpoint" class="field"></select>
+            <input id="rawModel" class="field font-mono !text-[12px]" list="modelList" placeholder="model id (optional)">
+          </div>
+          <datalist id="modelList"></datalist>
+          <label class="text-[11px] text-[#7c8296] font-semibold uppercase tracking-wider">JSON body</label>
+          <textarea id="rawBody" class="field font-mono !text-[12px]" rows="18" spellcheck="false"></textarea>
+          <div class="flex gap-2">
+            <button id="rawSend" class="btn btn-pri">⇢ Send request</button>
+            <button id="rawPretty" class="btn">Format JSON</button>
+            <span id="rawMeta" class="text-[11px] font-mono text-[#7c8296] self-center"></span>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div class="card p-4"><div class="flex justify-between items-center mb-2"><span class="text-[11px] font-semibold uppercase tracking-wider text-[#7c8296]">Request URL</span><button id="rawCurl" class="btn !py-1 !px-2 !text-[10px]">Copy cURL</button></div>
+            <pre class="json !text-[#a7c4ff]" id="rawUrlView">—</pre></div>
+          <div class="card p-4"><div class="text-[11px] font-semibold uppercase tracking-wider text-[#7c8296] mb-2">Response</div>
+            <pre class="json max-h-[420px] overflow-auto" id="rawResView">Send a request to see the raw server response…</pre></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- INSPECTOR DRAWER -->
+<div id="inspDrawer" class="fixed inset-y-0 right-0 w-full sm:w-[560px] bg-panel/95 backdrop-blur-2xl border-l border-edge z-50 translate-x-full transition-transform duration-300 flex flex-col">
+  <div class="px-4 py-3 border-b border-edge flex items-center justify-between">
+    <div class="font-disp font-semibold text-[14px]">Traffic Inspector <span class="text-[11px] text-[#7c8296] font-sans font-normal">— every request &amp; response, exactly as sent</span></div>
+    <div class="flex gap-2">
+      <button id="inspClear" class="btn !py-1 !px-2.5 !text-[11px]">Clear</button>
+      <button id="inspClose" class="btn !py-1 !px-2.5 !text-[11px]">✕</button>
+    </div>
+  </div>
+  <div class="flex-1 overflow-y-auto border-b border-edge" id="inspList"><div class="p-6 text-center text-[12px] text-[#565c72]">No traffic yet — send something.</div></div>
+  <div class="h-[42%] flex flex-col">
+    <div class="px-4 pt-2 flex gap-1" id="inspTabs">
+      <button class="btn !py-1 !px-3 !text-[11px] inspTab" data-t="req">Request</button>
+      <button class="btn !py-1 !px-3 !text-[11px] inspTab" data-t="res">Response</button>
+      <button class="btn !py-1 !px-3 !text-[11px] inspTab" data-t="curl">cURL</button>
+      <button id="inspCopy" class="btn !py-1 !px-3 !text-[11px] ml-auto">Copy</button>
+    </div>
+    <pre class="json flex-1 overflow-auto p-4" id="inspDetail">Select an entry above.</pre>
+  </div>
+</div>
+
+<div id="toastBox" class="fixed bottom-4 right-4 z-[60] space-y-2 w-[300px]"></div>
+
+<script>
+/* ================================================================
+   GeminiLab — single-file free-tier Gemini API console
+================================================================ */
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const BASE='https://generativelanguage.googleapis.com/v1beta';
+const WS_BASE='wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
+
+const state={ key:localStorage.getItem('glab_key')||'', reqs:0, oks:0, errs:0, toks:0, usage:{}, log:[], serverModels:[] };
+const VOICES=[["Zephyr","Bright"],["Puck","Upbeat"],["Charon","Informative"],["Kore","Firm"],["Fenrir","Excitable"],["Leda","Youthful"],["Orus","Firm"],["Aoede","Breezy"],["Callirrhoe","Easy-going"],["Autonoe","Bright"],["Enceladus","Breathy"],["Iapetus","Clear"],["Umbriel","Easy-going"],["Algieba","Smooth"],["Despina","Smooth"],["Erinome","Clear"],["Algenib","Gravelly"],["Rasalgethi","Informative"],["Laomedeia","Upbeat"],["Achernar","Soft"],["Alnilam","Firm"],["Schedar","Even"],["Gacrux","Mature"],["Pulcherrima","Forward"],["Achird","Friendly"],["Zubenelgenubi","Casual"],["Vindemiatrix","Gentle"],["Sadachbia","Lively"],["Sadaltager","Knowledgeable"],["Sulafat","Warm"]];
+
+/* ---------------- Model registry (user's dashboard) ---------------- */
+const M=(id,name,cat,rpm,tpm,rpd,iface,note)=>({id,name,cat,rpm,tpm,rpd,iface,note:note||''});
+const MODELS=[
+ M('antigravity','Antigravity','Agents',60,100000,100,'none','Agent product — managed in dashboard'),
+ M('deep-research-pro-preview','Deep Research Pro Preview','Agents',0,0,0,'none','Agent — not directly callable'),
+ M('gemini-2.0-flash','Gemini 2 Flash','Text-out models',0,0,0,'chat'),
+ M('gemini-2.0-flash-lite','Gemini 2 Flash Lite','Text-out models',0,0,0,'chat'),
+ M('computer-use-preview','Computer Use Preview','Other models',0,0,0,'chat','Requires computer-use tools'),
+ M('gemini-2.5-flash','Gemini 2.5 Flash','Text-out models',5,250000,20,'chat'),
+ M('gemini-2.5-flash-image','Nano Banana (Gemini 2.5 Flash Image)','Multi-modal',0,0,0,'image'),
+ M('gemini-2.5-flash-lite','Gemini 2.5 Flash Lite','Text-out models',10,250000,20,'chat'),
+ M('gemini-2.5-flash-preview-tts','Gemini 2.5 Flash TTS','Multi-modal',3,10000,10,'tts'),
+ M('gemini-2.5-pro','Gemini 2.5 Pro','Text-out models',0,0,0,'chat'),
+ M('gemini-2.5-pro-preview-tts','Gemini 2.5 Pro TTS','Multi-modal',0,0,0,'tts'),
+ M('gemini-3-flash-preview','Gemini 3 Flash','Text-out models',5,250000,20,'chat'),
+ M('gemini-3-pro-image','Nano Banana Pro (Gemini 3 Pro Image)','Multi-modal',0,0,0,'image'),
+ M('gemini-3.1-pro-preview','Gemini 3.1 Pro','Text-out models',0,0,0,'chat'),
+ M('gemini-3.1-flash-image','Nano Banana 2 (Gemini 3.1 Flash Image)','Multi-modal',0,0,0,'image'),
+ M('gemini-3.1-flash-lite','Gemini 3.1 Flash Lite','Text-out models',15,250000,500,'chat'),
+ M('gemini-3.1-flash-lite-image','Nano Banana 2 Lite (3.1 Flash Lite Image)','Multi-modal',0,0,0,'image'),
+ M('gemini-3.1-flash-tts-preview','Gemini 3.1 Flash TTS','Multi-modal',3,10000,10,'tts'),
+ M('gemini-3.5-flash','Gemini 3.5 Flash','Text-out models',5,250000,20,'chat'),
+ M('gemini-3.5-flash-lite','Gemini 3.5 Flash Lite','Text-out models',15,250000,500,'chat'),
+ M('gemini-3.6-flash','Gemini 3.6 Flash','Text-out models',5,250000,20,'chat'),
+ M('gemini-embedding-001','Gemini Embedding 1','Other models',100,30000,1000,'embed'),
+ M('gemini-embedding-2-preview','Gemini Embedding 2','Other models',100,30000,1000,'embed'),
+ M('gemini-omni-flash','Gemini Omni Flash','Multi-modal',0,0,0,'chat'),
+ M('gemini-robotics-er-1.5-preview','Gemini Robotics ER 1.5','Other models',10,250000,20,'chat','Embodied reasoning'),
+ M('gemini-robotics-er-1.6-preview','Gemini Robotics ER 1.6','Other models',5,250000,20,'chat','Embodied reasoning'),
+ M('gemini-robotics-er-2-preview','Gemini Robotics ER 2','Other models',5,250000,20,'chat','Embodied reasoning'),
+ M('gemma-4-26b','Gemma 4 26B','Other models',30,16000,14400,'none','On-device / self-hosted Gemma'),
+ M('gemma-4-31b','Gemma 31B','Other models',30,16000,14400,'none','On-device / self-hosted Gemma'),
+ M('imagen-4.0-fast-generate-001','Imagen 4 Fast','Multi-modal',0,0,25,'imagen'),
+ M('imagen-4.0-generate-001','Imagen 4','Multi-modal',0,0,25,'imagen'),
+ M('imagen-4.0-ultra-generate-001','Imagen 4 Ultra','Multi-modal',0,0,25,'imagen'),
+ M('lyria-3-clip-preview','Lyria 3 Clip','Multi-modal',0,0,0,'none','Music — preview access'),
+ M('lyria-3-pro-preview','Lyria 3 Pro','Multi-modal',0,0,0,'none','Music — preview access'),
+ M('veo-3.0-fast-generate-001','Veo 3 Fast','Multi-modal',0,0,0,'video'),
+ M('veo-3.0-generate-001','Veo 3','Multi-modal',0,0,0,'video'),
+ M('veo-3.0-lite-generate-001','Veo 3 Lite','Multi-modal',0,0,0,'video'),
+ M('gemini-2.5-flash-native-audio-preview-12-2025','Gemini 2.5 Flash Native Audio Dialog','Live API','∞',1000000,'∞','live'),
+ M('gemini-3-flash-live-preview','Gemini 3 Flash Live','Live API','∞',65000,'∞','live'),
+ M('gemini-3.5-live-translate-preview','Gemini 3.5 Live Translate','Live API','∞',20000,'∞','live'),
+];
+const fmtLim=n=> n==='∞'?'∞': (n===0?'0': n>=1000? (n%1000===0? n/1000+'K': (n/1000).toFixed(1)+'K') : String(n));
+const usageOf=id=> state.usage[id]||{n:0};
+function tick(id,tokens){ state.usage[id]=state.usage[id]||{n:0}; state.usage[id].n++;
+ const el=document.getElementById('use-'+cssId(id)); if(el){ el.textContent=state.usage[id].n; el.className='font-mono text-[#8b9dff] font-semibold'; } }
+function cssId(s){ return s.replace(/[^a-zA-Z0-9_-]/g,'_'); }
+
+/* ---------------- tiny utils ---------------- */
+function toast(msg,type){ const t=document.createElement('div');
+ t.className='toast card px-3.5 py-2.5 text-[12px] flex items-center gap-2 shadow-2xl';
+ const c=type==='err'?'bg-rose-400':type==='ok'?'bg-emerald-400':'bg-[#5aa2ff]';
+ t.innerHTML='<span class="dot '+c+' shrink-0"></span><span class="leading-snug"></span>';
+ t.lastChild.textContent=msg; $('#toastBox').appendChild(t); setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s'; setTimeout(()=>t.remove(),400)},4200); }
+function b64ToBytes(b64){ const bin=atob(b64); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i); return u; }
+function bytesToB64(u){ let s=''; const CH=0x8000; for(let i=0;i<u.length;i+=CH){ s+=String.fromCharCode.apply(null,u.subarray(i,i+CH)); } return btoa(s); }
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function mdToHtml(md){ try{ return DOMPurify.sanitize(marked.parse(md||'')); }catch(e){ return esc(md); } }
+function copyTxt(s){ navigator.clipboard.writeText(s).then(()=>toast('Copied to clipboard','ok')).catch(()=>toast('Copy failed','err')); }
+function updStats(){ $('#statReq').textContent=state.reqs; $('#statOk').textContent=state.oks; $('#statTok').textContent=state.toks.toLocaleString();
+ $('#ovReq').textContent=state.reqs; $('#ovErr').textContent=state.errs; $('#ovTok').textContent=state.toks.toLocaleString(); $('#ovLog').textContent=state.log.length;
+ $('#inspBadge').textContent=state.log.length; $('#inspBadge2').textContent=state.log.length; }
+function keyOk(){ return state.key.trim().length>8; }
+function needKey(){ if(!keyOk()){ toast('Add your Gemini API key in the sidebar first','err'); return true;} return false; }
+
+/* ---------------- HTTP + inspector logging ---------------- */
+function sanitizeForLog(obj){ // hide audio/image base64 blobs inside logged payloads
+ return JSON.parse(JSON.stringify(obj),(k,v)=>{ if(typeof v==='string' && v.length>4000 && /^[A-Za-z0-9+/=]+$/.test(v.slice(0,80))){ return '[binary base64 · '+v.length+' chars]'; } return v; });
+}
+function logPush(e){ state.log.unshift(e); if(state.log.length>200)state.log.pop(); renderInspList(); updStats(); }
+function curlOf(e){ let c="curl -X "+(e.method||'POST')+" '"+e.url.replace(state.key,'YOUR_API_KEY')+"'";
+ if(e.method!=='GET'){ c+=" \\\n  -H 'Content-Type: application/json' \\\n  -d '"+JSON.stringify(e.reqBody||{}).replace(/'/g,"'\\''")+"'"; } return c; }
+let inspSel=null, inspTab='req';
+function renderInspList(){ const box=$('#inspList');
+ if(!state.log.length){ box.innerHTML='<div class="p-6 text-center text-[12px] text-[#565c72]">No traffic yet — send something.</div>'; return; }
+ box.innerHTML=state.log.map((e,i)=>{ const st=e.status||e.kind||'—'; const ok=String(st).startsWith('2')||st==='ok';
+  return '<div data-i="'+i+'" class="inspItem px-4 py-2.5 border-b border-white/5 cursor-pointer hover:bg-white/5 '+(inspSel===i?'bg-[#8b7bff1a]':'')+'">'
+   +'<div class="flex items-center gap-2"><span class="dot '+(ok?'bg-emerald-400':'bg-rose-400')+'"></span>'
+   +'<span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-white/8 border border-white/10 text-[#a7c4ff]">'+esc(e.tag)+'</span>'
+   +'<span class="text-[11px] text-[#9aa0b4] truncate flex-1">'+esc((e.url||'').split('?')[0])+'</span>'
+   +'<span class="font-mono text-[10px] text-[#7c8296]">'+(e.ms!=null?e.ms+'ms':'')+'</span></div></div>'; }).join('');
+ box.querySelectorAll('.inspItem').forEach(el=>el.onclick=()=>{ inspSel=+el.dataset.i; inspTab='res'; renderInspList(); renderInspDetail(); }); }
+function renderInspDetail(){ const e=state.log[inspSel]; const pre=$('#inspDetail'); if(!e){ pre.textContent='Select an entry above.'; return; }
+ if(inspTab==='req') pre.textContent= e.reqBody? JSON.stringify(sanitizeForLog(e.reqBody),null,2) : '(no body)';
+ else if(inspTab==='res') pre.textContent= typeof e.resBody==='string'? e.resBody : JSON.stringify(sanitizeForLog(e.resBody??{}),null,2);
+ else pre.textContent=curlOf(e);
+ $$('.inspTab').forEach(b=>b.classList.toggle('btn-pri',b.dataset.t===inspTab)); }
+$('#inspTabs').addEventListener('click',e=>{ const b=e.target.closest('.inspTab'); if(!b)return; inspTab=b.dataset.t; renderInspDetail(); });
+$('#inspCopy').onclick=()=>{ if(inspSel==null)return; copyTxt($('#inspDetail').textContent); };
+$('#inspClear').onclick=()=>{ state.log=[]; inspSel=null; renderInspList(); renderInspDetail(); updStats(); };
+$('#inspClose').onclick=()=>$('#inspDrawer').classList.add('translate-x-full');
+$('#inspOpen').onclick=$('#inspOpenMobile').onclick=()=>{ renderInspList(); $('#inspDrawer').classList.remove('translate-x-full'); };
+
+async function geminiReq(opts){ /* {model, method, body, tag, sse:false, rawUrl} */
+ const url= opts.rawUrl || (BASE+'/models/'+opts.model+':'+(opts.method||'generateContent')+'?key='+encodeURIComponent(state.key)+(opts.sse?'&alt=sse':''));
+ const method= opts.method==='GET'?'GET':'POST';
+ const entry={tag:opts.tag||opts.method||'api', url, method, reqBody:opts.body||null, t:Date.now()};
+ const t0=performance.now();
+ let res;
+ try{ res=await fetch(url,{method, headers: method==='GET'?{}:{'Content-Type':'application/json'}, body: method==='GET'?undefined:JSON.stringify(opts.body||{})}); }
+ catch(netErr){ entry.status='NET'; entry.resBody={error:String(netErr)}; entry.ms=Math.round(performance.now()-t0); logPush(entry); state.reqs++; state.errs++; updStats(); throw new Error('Network error: '+netErr); }
+ state.reqs++; entry.ms=Math.round(performance.now()-t0); entry.status=res.status;
+ let data=null;
+ if(res.status===204){ data={}; } else if(opts.sse){ entry.resBody='(SSE stream — chunks delivered live)'; logPush(entry);
+   if(!res.ok){ let m=''; try{ const j=await res.json(); m=j.error?.message||m; }catch(_){} state.errs++; updStats(); throw new Error(m||('HTTP '+res.status)); }
+   return res; // caller streams it
+ } else {
+   const txt=await res.text();
+   try{ data=JSON.parse(txt); entry.resBody=data; }catch(_){ entry.resBody=txt.slice(0,20000); }
+   logPush(entry);
+ }
+ if(res.ok){ state.oks++; if(data?.usageMetadata?.totalTokenCount){ state.toks+=data.usageMetadata.totalTokenCount; } if(opts.model)tick(opts.model); updStats(); return data; }
+ state.errs++; updStats();
+ const msg=(data&&data.error&&data.error.message)||('HTTP '+res.status);
+ const e=new Error(msg); e.status=res.status; e.data=data; throw e;
+}
+
+/* ================= ROUTER ================= */
+const TITLES={ overview:['Overview & Limits','Your key, your quotas, everything the free tier offers.'],
+ chat:['LLM Chat','Every text-out model behind one streaming chat.'],
+ images:['Image Studio','Nano Banana family + Imagen 4.'],
+ voice:['TTS Voice','30 prebuilt voices, native PCM audio out.'],
+ live:['Live Realtime','Voice-to-voice over WebSockets — talk to Gemini.'],
+ video:['Video (Veo)','Long-running video generation with polling.'],
+ embed:['Embeddings','Vectors, dimensionality & cosine similarity.'],
+ tools:['Grounding Tools','Google Search, Maps, URL context & code execution.'],
+ suite:['Test Suite','Probe every model of your free tier, see what answers.'],
+ raw:['Raw API','Hand-crafted requests, raw server responses.']};
+function go(sec){ $$('.section').forEach(s=>s.classList.remove('on')); $('#sec-'+sec).classList.add('on');
+ $$('#navBar .navbtn').forEach(n=>n.classList.toggle('active',n.dataset.nav===sec));
+ $('#secTitle').textContent=TITLES[sec][0]; $('#secSub').textContent=TITLES[sec][1]; }
+$('#navBar').addEventListener('click',e=>{ const n=e.target.closest('.navbtn'); if(n)go(n.dataset.nav); });
+$$('[data-goto]').forEach(b=>b.onclick=()=>go(b.dataset.goto));
+
+/* ================= KEY ================= */
+const keyInput=$('#keyInput'); keyInput.value=state.key;
+keyInput.addEventListener('input',()=>{ state.key=keyInput.value.trim(); localStorage.setItem('glab_key',state.key); $('#keyDot').className='dot bg-zinc-500'; $('#keyStatusTxt').textContent='saved · not checked'; });
+$('#keyEye').onclick=()=>{ keyInput.type=keyInput.type==='password'?'text':'password'; };
+$('#keyValidate').onclick=async()=>{ if(!keyOk())return toast('Paste an API key first','err');
+ $('#keyDot').className='dot bg-amber-400 pulse'; $('#keyStatusTxt').textContent='validating…';
+ try{ const d=await geminiReq({rawUrl:BASE+'/models?pageSize=1&key='+encodeURIComponent(state.key),method:'GET',tag:'validate'});
+  $('#keyDot').className='dot bg-emerald-400'; $('#keyStatusTxt').textContent='valid ✓'; toast('API key is valid','ok');
+ }catch(e){ $('#keyDot').className='dot bg-rose-400'; $('#keyStatusTxt').textContent='invalid ✗'; toast('Key rejected: '+e.message,'err'); } };
+$('#resetSession').onclick=()=>{ if(confirm('Reset session stats and traffic log?')){ state.reqs=state.oks=state.errs=state.toks=0; state.log=[]; state.usage={}; inspSel=null; renderInspList(); renderInspDetail(); updStats(); buildLimitsTable(); toast('Session reset','ok'); } };
+
+/* ================= OVERVIEW ================= */
+function buildLimitsTable(){ const f=($('#limitFilter').value||'').toLowerCase(); const tb=$('#limitsBody');
+ tb.innerHTML=MODELS.filter(m=>!f||m.name.toLowerCase().includes(f)||m.id.toLowerCase().includes(f)||m.cat.toLowerCase().includes(f))
+ .map(m=>{ const u=usageOf(m.id).n; const st= m.iface==='none'?'<span class="badge b-dim">dashboard only</span>'
+   : (m.rpm===0&&m.rpd===0&&m.tpm===0)?'<span class="badge b-warn">no free quota</span>':'<span class="badge b-ok">callable</span>';
+  return '<tr><td><div class="font-semibold text-[#e8eaf2] text-[12.5px]">'+esc(m.name)+'</div><div class="font-mono text-[10px] text-[#7c8296]">'+esc(m.id)+(m.note?' · '+esc(m.note):'')+'</div></td>'
+   +'<td><span class="chip">'+esc(m.cat)+'</span></td>'
+   +'<td class="font-mono"><span id="use-'+cssId(m.id)+'" class="'+(u?'font-mono text-[#8b9dff] font-semibold':'')+'">'+u+'</span> / '+fmtLim(m.rpm)+'</td>'
+   +'<td class="font-mono">'+fmtLim(m.tpm)+'</td><td class="font-mono">'+fmtLim(m.rpd)+'</td><td>'+st+'</td></tr>'; }).join(''); }
+$('#limitFilter').addEventListener('input',buildLimitsTable);
+$('#fetchModelsBtn').onclick=async()=>{ if(needKey())return;
+ try{ const d=await geminiReq({rawUrl:BASE+'/models?pageSize=1000&key='+encodeURIComponent(state.key),method:'GET',tag:'list-models'});
+  state.serverModels=d.models||[]; const box=$('#serverModelsBox'); box.classList.remove('hidden');
+  box.innerHTML='<div class="text-[#6ee7b7] mb-1 font-sans font-semibold">'+state.serverModels.length+' models available on your key:</div>'
+   +state.serverModels.map(m=>'<div class="flex gap-2 items-center py-0.5 border-b border-white/5"><span class="text-[#a7c4ff]">'+esc(m.name.replace('models/',''))+'</span><span class="text-[#565c72] truncate flex-1">'+esc(m.displayName||'')+'</span><button class="chip hover:bg-white/10 cpk" data-id="'+esc(m.name.replace('models/',''))+'">copy</button></div>').join('');
+  box.querySelectorAll('.cpk').forEach(b=>b.onclick=()=>copyTxt(b.dataset.id));
+  const dl=$('#modelList'); dl.innerHTML=state.serverModels.map(m=>'<option value="'+esc(m.name.replace('models/',''))+'">').join('');
+  toast('Fetched '+state.serverModels.length+' models','ok');
+ }catch(e){ toast(e.message,'err'); } };
+
+/* ================= CHAT ================= */
+const chatHist=[]; let chatBusy=false, chatAbort=null;
+function fillChatModels(){ const sel=$('#chatModel'); sel.innerHTML=MODELS.filter(m=>m.iface==='chat').map(m=>'<option value="'+m.id+'">'+esc(m.name)+(m.rpm===0&&m.rpd===0?' (no free quota)':'')+'</option>').join('');
+ sel.value='gemini-3.5-flash-lite'; updChatLbl(); }
+function updChatLbl(){ $('#chatModelLbl').textContent=$('#chatModel').value; }
+$('#chatModel').addEventListener('change',updChatLbl);
+$('#chatTemp').addEventListener('input',()=>$('#tv').textContent=$('#chatTemp').value);
+function chatBubble(role){ const w=document.createElement('div');
+ w.className='flex '+(role==='user'?'justify-end':'justify-start');
+ w.innerHTML= role==='user'
+  ?'<div class="max-w-[80%] rounded-2xl rounded-br-md px-4 py-2.5 text-[13px] grad-btn text-white shadow-lg shadow-[#8b7bff22]"></div>'
+  :'<div class="max-w-[88%] w-full"><div class="md"></div><div class="meta text-[10px] font-mono text-[#565c72] mt-1.5"></div></div>';
+ $('#chatMsgs').appendChild(w); $('#chatMsgs').scrollTop=$('#chatMsgs').scrollHeight; return w; }
+async function chatSend(){ if(chatBusy)return; const text=$('#chatInput').value.trim(); if(!text)return; if(needKey())return;
+ const model=$('#chatModel').value; $('#chatInput').value='';
+ chatHist.push({role:'user',parts:[{text}]});
+ const ub=chatBubble('user'); ub.firstChild.textContent=text;
+ const body={contents:chatHist, generationConfig:{ temperature:+$('#chatTemp').value, maxOutputTokens:+$('#chatMaxTok').value||undefined, topP:+$('#chatTopP').value||undefined, responseModalities:['TEXT']}};
+ const sys=$('#chatSys').value.trim(); if(sys)body.systemInstruction={parts:[{text:sys}]};
+ const tb=parseInt($('#chatThink').value); if(tb&&tb!==0)body.generationConfig.thinkingConfig={thinkingBudget:tb};
+ const stream=$('#chatStream').checked;
+ const ab=chatBubble('model'); const mdEl=ab.querySelector('.md'); const metaEl=ab.querySelector('.meta');
+ mdEl.innerHTML='<span class="typing"><span></span><span></span><span></span></span>';
+ chatBusy=true; chatAbort=new AbortController(); $('#chatSend').classList.add('hidden'); $('#chatStop').classList.remove('hidden');
+ let acc='', t0=performance.now();
+ try{
+  if(stream){
+   const res=await geminiReq({model,method:'generateContent',body,tag:'chat·stream',sse:true});
+   const reader=res.body.getReader(); const dec=new TextDecoder(); let buf='',usage=null;
+   while(true){ const {done,value}=await reader.read(); if(done)break; buf+=dec.decode(value,{stream:true});
+    let idx; while((idx=buf.indexOf('\n'))>=0){ const line=buf.slice(0,idx).trim(); buf=buf.slice(idx+1);
+     if(!line.startsWith('data:'))continue; const js=line.slice(5).trim(); if(js==='[DONE]')continue;
+     try{ const ch=JSON.parse(js); if(ch.usageMetadata)usage=ch.usageMetadata;
+      const delta=(ch.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('');
+      if(delta){ acc+=delta; mdEl.innerHTML=mdToHtml(acc); $('#chatMsgs').scrollTop=$('#chatMsgs').scrollHeight; }
+     }catch(_){} } }
+   if(usage?.totalTokenCount){ state.toks+=usage.totalTokenCount; } tick(model); state.oks++; updStats();
+   metaEl.textContent=model+' · '+Math.round(performance.now()-t0)+'ms'+(usage?' · '+usage.totalTokenCount+' tokens':'');
+  } else {
+   const d=await geminiReq({model,method:'generateContent',body,tag:'chat'});
+   acc=(d.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('')||'*(empty response — check finishReason / safety in Inspector)*';
+   mdEl.innerHTML=mdToHtml(acc);
+   metaEl.textContent=model+' · '+Math.round(performance.now()-t0)+'ms'+(d.usageMetadata?' · '+d.usageMetadata.totalTokenCount+' tokens':'');
+  }
+  chatHist.push({role:'model',parts:[{text:acc}]});
+ }catch(e){ mdEl.innerHTML='<div class="text-rose-300 text-[12.5px]">⚠ '+esc(e.message)+'</div>'; metaEl.textContent=model+' · failed'; }
+ chatBusy=false; $('#chatSend').classList.remove('hidden'); $('#chatStop').classList.add('hidden'); }
+$('#chatSend').onclick=chatSend;
+$('#chatStop').onclick=()=>{ try{chatAbort&&chatAbort.abort();}catch(_){} };
+$('#chatInput').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); chatSend(); } });
+$('#chatClear').onclick=()=>{ chatHist.length=0; $('#chatMsgs').innerHTML=''; };
+
+/* ================= IMAGES ================= */
+const NB_MODELS=['gemini-3.1-flash-image','gemini-3.1-flash-lite-image','gemini-3-pro-image','gemini-2.5-flash-image'];
+let imgRef=null; // {mime,data}
+function fillImgModels(){ $('#imgModel').innerHTML=
+ NB_MODELS.map(m=>{ const r=MODELS.find(x=>x.id===m); return '<option value="'+m+'">🍌 '+esc(r?r.name:m)+'</option>'; }).join('')
+ +MODELS.filter(m=>m.iface==='imagen').map(m=>'<option value="'+m.id+'">🎨 '+esc(m.name)+'</option>').join('');
+ imgToggleOpts(); }
+function imgToggleOpts(){ const nb=NB_MODELS.includes($('#imgModel').value); $('#imgNbOpts').classList.toggle('hidden',!nb); $('#imgImOpts').classList.toggle('hidden',nb); }
+$('#imgModel').addEventListener('change',imgToggleOpts);
+$('#imgFileBtn').onclick=()=>$('#imgFile').click();
+$('#imgFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return;
+ const rd=new FileReader(); rd.onload=()=>{ const b64=rd.result.split(',')[1]; imgRef={mime:f.type,data:b64};
+  $('#imgFileName').textContent=f.name; const p=$('#imgFilePrev'); p.src=rd.result; p.classList.remove('hidden'); }; rd.readAsDataURL(f); });
+$('#imgGen').onclick=async()=>{ if(needKey())return; const model=$('#imgModel').value; const prompt=$('#imgPrompt').value.trim();
+ if(!prompt)return toast('Write a prompt first','err');
+ $('#imgGen').disabled=true; $('#imgStatus').innerHTML='<span class="inline-block dot bg-amber-400 pulse mr-1"></span> Generating… (image calls can take 10–30 s)';
+ try{
+  if(NB_MODELS.includes(model)){
+   const parts=[{text:prompt}]; if(imgRef)parts.push({inlineData:{mimeType:imgRef.mime,data:imgRef.data}});
+   const gc={responseModalities:['TEXT','IMAGE'], imageConfig:{aspectRatio:$('#imgAspect').value}};
+   if($('#imgSize').value)gc.imageConfig.imageSize=$('#imgSize').value;
+   const d=await geminiReq({model,method:'generateContent',body:{contents:[{role:'user',parts}],generationConfig:gc},tag:'image·nano-banana'});
+   const ps=d.candidates?.[0]?.content?.parts||[]; const txt=ps.filter(p=>p.text).map(p=>p.text).join('\n');
+   const imgs=ps.filter(p=>p.inlineData?.data).map(p=>({b64:p.inlineData.data,mime:p.inlineData.mimeType||'image/png'}));
+   if(!imgs.length)throw new Error('Model returned no image (possibly blocked). Check Inspector.');
+   imgs.forEach(im=>addImageCard(im.b64,im.mime,model,txt));
+   $('#imgStatus').textContent='Done ✓ '+imgs.length+' image(s).';
+  } else {
+   const params={sampleCount:+$('#imgCount').value, aspectRatio:$('#imgImAspect').value};
+   if($('#imgNeg').value.trim())params.negativePrompt=$('#imgNeg').value.trim();
+   const d=await geminiReq({model,method:'predict',body:{instances:[{prompt}],parameters:params},tag:'image·imagen'});
+   const preds=d.predictions||[]; if(!preds.length)throw new Error('No predictions returned — check Inspector.');
+   preds.forEach(p=>{ if(p.bytesBase64Encoded)addImageCard(p.bytesBase64Encoded,p.mimeType||'image/png',model); });
+   $('#imgStatus').textContent='Done ✓ '+preds.length+' image(s).';
+  }
+ }catch(e){ $('#imgStatus').innerHTML='<span class="text-rose-300">⚠ '+esc(e.message)+'</span>'; }
+ $('#imgGen').disabled=false; };
+function addImageCard(b64,mime,model,txt){ $('#imgEmpty').classList.add('hidden');
+ const url='data:'+mime+';base64,'+b64; const card=document.createElement('div');
+ card.className='card overflow-hidden';
+ card.innerHTML='<img src="'+url+'" class="w-full rounded-t-[1.05rem] object-cover">'
+  +(txt?'<div class="md px-3 pt-2 text-[11.5px]">'+mdToHtml(txt)+'</div>':'')
+  +'<div class="flex items-center gap-2 p-2.5"><span class="font-mono text-[10px] text-[#7c8296] flex-1 truncate">'+esc(model)+'</span>'
+  +'<button class="btn !py-1 !px-2 !text-[10px] reuse">↺ edit</button><a class="btn !py-1 !px-2 !text-[10px]" href="'+url+'" download="gemini-image.png">⬇ save</a></div>';
+ card.querySelector('.reuse').onclick=()=>{ imgRef={mime,data:b64}; $('#imgFileName').textContent='generated image'; const p=$('#imgFilePrev'); p.src=url; p.classList.remove('hidden');
+  if(!NB_MODELS.includes($('#imgModel').value)){$('#imgModel').value='gemini-3.1-flash-image'; imgToggleOpts();} toast('Loaded as reference image — write a new prompt','ok'); };
+ $('#imgResults').prepend(card); }
+$('#imgClear').onclick=()=>{ $('#imgResults').innerHTML=''; $('#imgEmpty').classList.remove('hidden'); };
+
+/* ================= TTS ================= */
+function fillVoices(){ const o=VOICES.map(v=>'<option value="'+v[0]+'">'+v[0]+' — '+v[1]+'</option>').join('');
+ $('#ttsVoice').innerHTML=o; $('#ttsVoice2').innerHTML=o; $('#ttsVoice2').value='Puck'; $('#liveVoice').innerHTML=o; }
+$('#ttsMulti').addEventListener('change',()=>$('#ttsVoice2Wrap').classList.toggle('hidden',!$('#ttsMulti').checked));
+$('#ttsGen').onclick=async()=>{ if(needKey())return; const text=$('#ttsText').value.trim(); if(!text)return toast('Write a script first','err');
+ const model=$('#ttsModel').value; const multi=$('#ttsMulti').checked;
+ const speech={voiceConfig:{prebuiltVoiceConfig:{voiceName:$('#ttsVoice').value}}};
+ if(multi)speech.multiSpeakerVoiceConfig={speakerVoiceConfigs:[{speaker:'Joe',voiceConfig:{prebuiltVoiceConfig:{voiceName:$('#ttsVoice').value}}},{speaker:'Jane',voiceConfig:{prebuiltVoiceConfig:{voiceName:$('#ttsVoice2').value}}}]};
+ $('#ttsGen').disabled=true; $('#ttsStatus').innerHTML='<span class="inline-block dot bg-amber-400 pulse mr-1"></span> Synthesizing…';
+ try{ const d=await geminiReq({model,method:'generateContent',body:{contents:[{parts:[{text}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:speech}},tag:'tts'});
+  const part=(d.candidates?.[0]?.content?.parts||[]).find(p=>p.inlineData?.data);
+  if(!part)throw new Error('No audio returned — check Inspector.');
+  const i16=new Int16Array(b64ToBytes(part.inlineData.data).buffer);
+  const wav=pcmToWav(i16,24000); const url=URL.createObjectURL(wav);
+  const au=$('#ttsAudio'); au.src=url; $('#ttsDl').href=url; $('#ttsResult').classList.remove('hidden'); au.play().catch(()=>{});
+  $('#ttsStatus').textContent='Done ✓ '+(i16.length/24000).toFixed(1)+'s of audio.';
+ }catch(e){ $('#ttsStatus').innerHTML='<span class="text-rose-300">⚠ '+esc(e.message)+'</span>'; }
+ $('#ttsGen').disabled=false; };
+function pcmToWav(pcm,rate){ const dl=pcm.byteLength; const buf=new ArrayBuffer(44+dl); const v=new DataView(buf);
+ const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+ w(0,'RIFF'); v.setUint32(4,36+dl,true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+ v.setUint32(24,rate,true); v.setUint32(28,rate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,dl,true);
+ new Int16Array(buf,44).set(pcm); return new Blob([buf],{type:'audio/wav'}); }
+
+/* ================= LIVE API ================= */
+const live={ws:null,actx:null,pctx:null,proc:null,stream:null,nextT:0,timer:null,secs:0,sent:0,recv:null,raf:null,analyser:null,userTx:'',modelTx:'',msgs:0};
+for(let i=0;i<20;i++){ const b=document.createElement('div'); b.className='wbar'; $('#waveBox').appendChild(b); }
+const waveBars=$$('#waveBox .wbar');
+function setLiveUI(on){ $('#liveStart').classList.toggle('hidden',on); $('#liveEnd').classList.toggle('hidden',!on);
+ $('#liveDot').className='dot '+(on?'bg-emerald-400 pulse':'bg-zinc-600'); $('#liveState').textContent=on?'Connected — speak naturally':'Not connected'; $('#liveStats').classList.toggle('hidden',!on); }
+$('#liveStart').onclick=async()=>{ if(needKey())return; if(live.ws)return;
+ const model=$('#liveModel').value;
+ try{ live.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,channelCount:1}}); }
+ catch(e){ return toast('Microphone access denied','err'); }
+ $('#liveStatus').textContent='Opening WebSocket…';
+ const ws=new WebSocket(WS_BASE+'?key='+encodeURIComponent(state.key)); live.ws=ws;
+ ws.onopen=()=>{ const setup={setup:{model:'models/'+model,
+   generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:$('#liveVoice').value}}}},
+   inputAudioTranscription:{model:'models/gemini-2.0-flash'},
+   outputAudioTranscription:{model:'models/gemini-2.0-flash'},
+   realtimeInputConfig:{automaticActivityDetection:{disabled:false}}}};
+  if($('#liveSys').value.trim())setup.setup.systemInstruction={parts:[{text:$('#liveSys').value.trim()}]};
+  ws.send(JSON.stringify(setup));
+  logPush({tag:'live·setup',url:WS_BASE.split('?')[0]+'?key=•••',method:'WS',reqBody:setup,status:'sent',ms:0});
+  startMic(); startLiveClock(); setLiveUI(true); $('#liveStatus').textContent='Session live. Audio in: 16 kHz PCM · out: 24 kHz native audio.';
+  live.userTx=''; live.modelTx=''; live.secs=0; live.sent=0; live.msgs=0; state.reqs++; tick(model); updStats(); };
+ ws.onmessage=ev=>{ let m; try{ m=JSON.parse(ev.data); }catch(_){return;} live.msgs++;
+  if(m.setupComplete){ logPush({tag:'live·setupComplete',url:'ws',method:'WS',reqBody:null,status:'ok',resBody:m,ms:0}); }
+  const sc=m.serverContent; if(!sc)return;
+  if(sc.modelTurn?.parts)for(const p of sc.modelTurn.parts){
+    if(p.inlineData?.data){ playLiveChunk(p.inlineData.data); live.recv=(live.recv||0)+p.inlineData.data.length; }
+    else if(p.text){ live.modelTx+=p.text; $('#liveModelTx').innerHTML=mdToHtml(live.modelTx); scrollTx(); } }
+  if(sc.inputTranscription?.text){ live.userTx+=sc.inputTranscription.text+' '; $('#liveUserTx').textContent=live.userTx; scrollTx(); }
+  if(sc.outputTranscription?.text){ live.modelTx+=sc.outputTranscription.text; $('#liveModelTx').innerHTML=mdToHtml(live.modelTx); scrollTx(); }
+  if(live.msgs<=4||sc.turnComplete)logPush({tag:'live·server',url:'ws',method:'WS',reqBody:null,status:'msg',resBody:sanitizeForLog(m),ms:0});
+  $('#liveStats').innerHTML='<div>↑ sent '+(live.sent/1024).toFixed(0)+' KB · ↓ recv '+((live.recv||0)*3/4/1024).toFixed(0)+' KB</div><div>messages: '+live.msgs+'</div>'; };
+ ws.onerror=()=>toast('Live WebSocket error — check Inspector','err');
+ ws.onclose=e=>{ setLiveUI(false); stopMic(); if(live.timer){clearInterval(live.timer);live.timer=null;} toast('Live session closed ('+e.code+')','err'); $('#liveStatus').textContent='Session ended.'; };
+};
+function scrollTx(){ $('#liveUserTx').parentElement.scrollTop=1e6; $('#liveModelTx').parentElement.scrollTop=1e6; }
+function startLiveClock(){ live.timer=setInterval(()=>{ live.secs++; $('#liveTimer').textContent=String(Math.floor(live.secs/60)).padStart(2,'0')+':'+String(live.secs%60).padStart(2,'0'); },1000); }
+function startMic(){ live.actx=new (window.AudioContext||window.webkitAudioContext)();
+ const src=live.actx.createMediaStreamSource(live.stream);
+ live.analyser=live.actx.createAnalyser(); live.analyser.fftSize=64;
+ const proc=live.actx.createScriptProcessor(4096,1,1); live.proc=proc;
+ const mute=live.actx.createGain(); mute.gain.value=0;
+ src.connect(live.analyser); src.connect(proc); proc.connect(mute); mute.connect(live.actx.destination);
+ const freq=new Uint8Array(live.analyser.frequencyBinCount);
+ (function draw(){ if(!live.analyser)return; live.analyser.getByteFrequencyData(freq);
+  waveBars.forEach((b,i)=>{ b.style.height=(5+(freq[i%freq.length]/255)*44)+'px'; }); live.raf=requestAnimationFrame(draw); })();
+ proc.onaudioprocess=e=>{ if(!live.ws||live.ws.readyState!==1)return;
+  const f32=e.inputBuffer.getChannelData(0); const from=live.actx.sampleRate; const to=16000;
+  const ratio=from/to; const len=Math.floor(f32.length/ratio); const out=new Int16Array(len);
+  for(let i=0;i<len;i++){ const idx=i*ratio; const i0=Math.floor(idx); const frac=idx-i0;
+   const s=(f32[i0]||0)*(1-frac)+(f32[i0+1]||0)*frac; out[i]=Math.max(-1,Math.min(1,s))*32767; }
+  const b64=bytesToB64(new Uint8Array(out.buffer)); live.sent+=out.byteLength;
+  live.ws.send(JSON.stringify({realtimeInput:{mediaChunks:[{mimeType:'audio/pcm;rate=16000',data:b64}]}})); };
+}
+function stopMic(){ try{ live.proc&&live.proc.disconnect(); live.stream&&live.stream.getTracks().forEach(t=>t.stop()); live.actx&&live.actx.close(); }catch(_){}
+ if(live.raf)cancelAnimationFrame(live.raf); live.analyser=null; waveBars.forEach(b=>b.style.height='6px'); }
+function playLiveChunk(b64){ if(!live.pctx){ live.pctx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:24000}); live.nextT=0; }
+ const c=live.pctx; if(c.state==='suspended')c.resume();
+ const pcm=new Int16Array(b64ToBytes(b64).buffer);
+ const buf=c.createBuffer(1,pcm.length,24000); const ch=buf.getChannelData(0);
+ for(let i=0;i<pcm.length;i++)ch[i]=pcm[i]/32768;
+ const s=c.createBufferSource(); s.buffer=buf; s.connect(c.destination);
+ const t=Math.max(c.currentTime,live.nextT); s.start(t); live.nextT=t+buf.duration; }
+$('#liveEnd').onclick=()=>{ if(live.ws){ try{live.ws.close();}catch(_){} live.ws=null; } setLiveUI(false); stopMic(); if(live.timer){clearInterval(live.timer);live.timer=null;} $('#liveTimer').textContent='00:00'; };
+$('#liveSendText').onclick=()=>{ if(!live.ws||live.ws.readyState!==1)return toast('No live session','err');
+ const t=$('#liveText').value.trim(); if(!t)return; $('#liveText').value='';
+ live.userTx+='[typed] '+t+'\n'; $('#liveUserTx').textContent=live.userTx; scrollTx();
+ const msg={clientContent:{turns:[{role:'user',parts:[{text:t}]}],turnComplete:true}};
+ live.ws.send(JSON.stringify(msg));
+ logPush({tag:'live·text',url:'ws',method:'WS',reqBody:msg,status:'sent',ms:0}); };
+
+/* ================= VIDEO (Veo) ================= */
+let videoAbort=false;
+$('#videoGen').onclick=async()=>{ if(needKey())return; const model=$('#videoModel').value; const prompt=$('#videoPrompt').value.trim();
+ if(!prompt)return toast('Describe your video first','err');
+ const btn=$('#videoGen'); btn.disabled=true; videoAbort=false;
+ const status=$('#videoStatus'), timer=$('#videoTimer'); let secs=0;
+ const clk=setInterval(()=>{ secs++; timer.textContent='⏳ '+String(Math.floor(secs/60)).padStart(2,'0')+':'+String(secs%60).padStart(2,'0'); },1000);
+ $('#videoEmptyTxt').firstChild.textContent='Rendering… Veo jobs usually take 1–5 minutes. ';
+ try{
+  const body={instances:[{prompt}],parameters:{aspectRatio:$('#videoAspect').value,personGeneration:$('#videoPeople').value}};
+  if($('#videoNeg').value.trim())body.parameters.negativePrompt=$('#videoNeg').value.trim();
+  const op=await geminiReq({model,method:'predictLongRunning',body,tag:'video·start'});
+  const opName=op.name; if(!opName)throw new Error('No operation name returned.');
+  status.textContent='Operation: '+opName;
+  let done=null;
+  for(let i=0;i<80;i++){ if(videoAbort)throw new Error('Cancelled.');
+   await new Promise(r=>setTimeout(r,8000));
+   const poll=await geminiReq({rawUrl:BASE+'/'+opName+'?key='+encodeURIComponent(state.key),method:'GET',tag:'video·poll'});
+   if(poll.done){ done=poll; break; } }
+  if(!done)throw new Error('Timed out waiting for operation.');
+  if(done.error)throw new Error(done.error.message||'Video generation failed.');
+  const sample=done.response?.generateVideoResponse?.generatedSamples?.[0];
+  const vid=sample?.video; if(!vid)throw new Error('No video in response — see Inspector.');
+  let src=vid.uri; if(src.includes('generativelanguage')&&!src.includes('key='))src+='&key='+encodeURIComponent(state.key);
+  $('#videoResult').innerHTML='<video src="'+esc(src)+'" controls autoplay loop class="w-full rounded-xl"></video>'
+   +'<div class="flex justify-center gap-2 mt-3"><a class="btn" href="'+esc(src)+'" target="_blank">Open source URL</a></div>';
+  status.textContent='Done ✓'; toast('Video ready','ok');
+ }catch(e){ status.textContent='⚠ '+e.message; $('#videoEmptyTxt').firstChild.textContent='Generation failed — see the exact server response in the Inspector. '; }
+ clearInterval(clk); timer.textContent=''; btn.disabled=false; };
+
+/* ================= EMBEDDINGS ================= */
+$('#embModel').addEventListener('change',()=>$('#embTaskWrap').classList.toggle('hidden',$('#embModel').value!=='gemini-embedding-001'));
+let embLast=null;
+$('#embRun').onclick=async()=>{ if(needKey())return;
+ const model=$('#embModel').value, dim=+$('#embDim').value, task=$('#embTask').value;
+ const a=$('#embA').value.trim(), b=$('#embB').value.trim(); if(!a||!b)return toast('Fill both texts','err');
+ const mk=t=>{ const body={model:'models/'+model,content:{parts:[{text:t}]},outputDimensionality:dim};
+  if(task&&model==='gemini-embedding-001')body.taskType=task; return body; };
+ $('#embRun').disabled=true;
+ try{ const [ra,rb]=await Promise.all([
+   geminiReq({model,method:'embedContent',body:mk(a),tag:'embed·A'}),
+   geminiReq({model,method:'embedContent',body:mk(b),tag:'embed·B'})]);
+  const va=ra.embedding.values, vb=rb.embedding.values;
+  let dot=0,na=0,nb=0; for(let i=0;i<va.length;i++){ dot+=va[i]*vb[i]; na+=va[i]*va[i]; nb+=vb[i]*vb[i]; }
+  const sim=dot/(Math.sqrt(na)*Math.sqrt(nb)||1);
+  $('#embOut').classList.remove('hidden');
+  $('#embSim').textContent=(sim).toFixed(4); $('#embSimBar').style.width=Math.max(0,Math.min(100,sim*100))+'%';
+  $('#embMeta').textContent=model+' · dim '+va.length+' · 2 calls';
+  drawBars('#embBarsA',va); drawBars('#embBarsB',vb);
+  embLast={a:va,b:vb,model,dim,sim};
+ }catch(e){ toast(e.message,'err'); }
+ $('#embRun').disabled=false; };
+function drawBars(sel,vals){ const box=$(sel); const n=Math.min(64,vals.length); let mn=Infinity,mx=-Infinity;
+ for(let i=0;i<n;i++){ mn=Math.min(mn,vals[i]); mx=Math.max(mx,vals[i]); }
+ const span=(mx-mn)||1; box.innerHTML='';
+ for(let i=0;i<n;i++){ const d=document.createElement('div');
+  d.className='flex-1 rounded-t-sm'; d.style.background='linear-gradient(180deg,#5aa2ff,#8b7bff)';
+  d.style.height=(4+((vals[i]-mn)/span)*56)+'px'; d.title=vals[i].toFixed(4); box.appendChild(d); } }
+$('#embCopy').onclick=()=>{ if(!embLast)return; copyTxt(JSON.stringify(embLast)); };
+
+/* ================= TOOLS / GROUNDING ================= */
+function fillToolModels(){ $('#toolModel').innerHTML=MODELS.filter(m=>m.iface==='chat'&&['Text-out models'].includes(m.cat)).map(m=>'<option value="'+m.id+'">'+esc(m.name)+'</option>').join(''); $('#toolModel').value='gemini-3.5-flash-lite'; }
+$('#toolMaps').addEventListener('change',()=>$('#mapsOpts').classList.toggle('hidden',!$('#toolMaps').checked));
+$('#toolUrl').addEventListener('change',()=>$('#urlOpts').classList.toggle('hidden',!$('#toolUrl').checked));
+$('#toolGeo').onclick=()=>{ if(!navigator.geolocation)return toast('Geolocation unavailable','err');
+ navigator.geolocation.getCurrentPosition(p=>{ $('#toolLat').value=p.coords.latitude.toFixed(6); $('#toolLng').value=p.coords.longitude.toFixed(6); toast('Location captured','ok'); },()=>toast('Location denied','err')); };
+$('#toolRun').onclick=async()=>{ if(needKey())return; const model=$('#toolModel').value; const prompt=$('#toolPrompt').value.trim();
+ if(!prompt)return toast('Write a prompt','err');
+ const body={contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{responseModalities:['TEXT']}};
+ const tools=[];
+ if($('#toolSearch').checked)tools.push({google_search:{}});
+ if($('#toolMaps').checked)tools.push({google_maps:{}});
+ if($('#toolUrl').checked)tools.push({urlContext:{}});
+ if($('#toolCode').checked)tools.push({code_execution:{}});
+ if(!tools.length)return toast('Enable at least one tool','err');
+ body.tools=tools;
+ if($('#toolMaps').checked){ body.retrievalConfig={latLng:{latitude:+$('#toolLat').value||0,longitude:+$('#toolLng').value||0}}; }
+ if($('#toolUrl').checked){ const urls=$('#toolUrls').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(urls.length)body.urlContextMetadata={urlMetadata:urls.map(u=>({url:u}))}; }
+ $('#toolRun').disabled=true; $('#toolStatus').innerHTML='<span class="inline-block dot bg-amber-400 pulse mr-1"></span> Running with '+tools.length+' tool(s)…';
+ $('#toolOut').classList.add('hidden');
+ try{ const d=await geminiReq({model,method:'generateContent',body,tag:'tools·grounding'});
+  const cand=d.candidates?.[0]||{}; const text=(cand.content?.parts||[]).filter(p=>p.text).map(p=>p.text).join('\n');
+  $('#toolAnswer').innerHTML=mdToHtml(text||'*(no text returned)*');
+  const gm=cand.groundingMetadata; const chips=[];
+  (gm?.groundingChunks||[]).forEach(c=>{ if(c.web?.uri)chips.push('<a class="src-chip" target="_blank" href="'+esc(c.web.uri)+'">🌐 '+esc((c.web.title||c.web.uri).slice(0,40))+'</a>');
+   if(c.maps)chips.push('<span class="src-chip">📍 '+esc(c.maps.placeId||'place')+'</span>'); });
+  $('#toolSources').innerHTML=chips.join('')||'<span class="text-[11px] text-[#565c72]">No grounding chunks returned.</span>';
+  $('#toolSrcWrap').classList.toggle('hidden',!gm);
+  const codeP=(cand.content?.parts||[]).filter(p=>p.executableCode||p.codeExecutionResult);
+  if(codeP.length){ $('#toolCodeWrap').classList.remove('hidden');
+   $('#toolCodeOut').textContent=codeP.map(p=>p.executableCode?('
