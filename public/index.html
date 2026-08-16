@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store">
 <title>AGENT//DECK</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,7 +70,7 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
 .gate-actions .btn{flex:1;padding:12px}
 .gate-foot{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);font-size:11.5px;color:var(--tx-3);line-height:1.6}
 .gate-foot b{color:var(--tx-2);font-weight:500}
-#app{display:none;height:100vh;grid-template-columns:360px 1fr;grid-template-rows:56px 1fr}
+#app{display:none;height:100vh;height:100dvh;grid-template-columns:360px 1fr;grid-template-rows:56px 1fr}
 #app.on{display:grid}
 .topbar{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--border);background:var(--bg-2)}
 .tb-brand{display:flex;align-items:center;gap:9px;font-weight:600}
@@ -83,7 +83,6 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
 .sidebar{grid-row:2;background:var(--bg-2);border-right:1px solid var(--border);display:flex;flex-direction:column;min-width:0}
 .side-tabs{display:flex;gap:4px;padding:12px;border-bottom:1px solid var(--border)}
 .side-tabs button{flex:1;padding:7px 10px;font-size:11px;font-weight:500;border-radius:var(--r-sm);color:var(--tx-3);transition:all .15s}
-.side-tabs button:hover{background:#1e1e22;color:var(--tx-2)}
 .side-tabs button.act{background:#222226;color:var(--tx)}
 .side-body{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 .side-panel{display:none;flex:1;flex-direction:column;min-height:0;overflow:hidden}
@@ -177,15 +176,21 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
 .modal .sub{color:var(--tx-3);font-size:12px;margin-bottom:16px;line-height:1.55}
 .modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
 
-/* ============ MOBILE / RESPONSIVE ============ */
+/* ============ MOBILE ============ */
 @media(max-width:900px){
-  #app{grid-template-columns:1fr;grid-template-rows:56px minmax(220px,36vh) minmax(0,1fr)}
+  #app{grid-template-columns:1fr;grid-template-rows:56px minmax(200px,34vh) minmax(0,1fr)}
   .main{grid-row:2;grid-column:1}
   .sidebar{grid-row:3;grid-column:1;border-right:0;border-top:1px solid var(--border)}
   #chipShell{display:none}
   .tb-brand span{display:none}
   .topbar{padding:0 12px;gap:8px}
   .gate{padding:24px 20px}
+  /* mission panel scrolls; chat input sticky so it's ALWAYS reachable */
+  #sp-mission{overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .mission-body{flex:none;overflow:visible}
+  .chat-wrap{flex:none;min-height:0}
+  #chatLog{max-height:220px;min-height:110px}
+  .chat-in{position:sticky;bottom:0;background:var(--bg-2);z-index:7;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
   .computer-head{padding:8px 10px;gap:6px}
   .computer-head .mbtn{padding:4px 7px}
 }
@@ -415,11 +420,12 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
 <div class="toast-wrap" id="toasts"></div>
 
 <script type="module">
-/* AGENT//DECK v2.3 */
-const APP_VERSION='2.3';
+/* AGENT//DECK v2.4 */
+const APP_VERSION='2.4';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const normId=i=>(i&&(i.sandboxID||i.sandboxId||i.id))||(typeof i==='string'?i:null);
 
 window.addEventListener('error',e=>{const b=$('#fatalBar');b.style.display='block';b.textContent='JS ERROR: '+e.message;});
 window.addEventListener('unhandledrejection',e=>{const b=$('#fatalBar');b.style.display='block';b.textContent='ASYNC ERROR: '+(e.reason&&e.reason.message?e.reason.message:e.reason);});
@@ -442,7 +448,7 @@ function chatMsg(who,text,img,out){const log=$('#chatLog');const m=document.crea
 let typingEl=null;
 function typing(on){if(on&&!typingEl){typingEl=document.createElement('div');typingEl.className='msg agent';typingEl.innerHTML='<div class="bub typing"><i></i><i></i><i></i></div>';$('#chatLog').appendChild(typingEl);$('#chatLog').scrollTop=1e9;}else if(!on&&typingEl){typingEl.remove();typingEl=null;}}
 
-/* ================= connect-rpc (envd) envelope codec ================= */
+/* ---- connect-rpc envelope codec ---- */
 function envMsg(obj){const p=new TextEncoder().encode(JSON.stringify(obj));const o=new Uint8Array(5+p.length);o[0]=0;new DataView(o.buffer).setUint32(1,p.length,false);o.set(p,5);return o;}
 function envEnd(){const p=new TextEncoder().encode('{}');const o=new Uint8Array(5+p.length);o[0]=2;new DataView(o.buffer).setUint32(1,p.length,false);o.set(p,5);return o;}
 function concatBytes(a,b){const o=new Uint8Array(a.length+b.length);o.set(a,0);o.set(b,a.length);return o;}
@@ -453,15 +459,12 @@ function parseConnectStream(ab){
   while(off+5<=u8.length){
     const flags=u8[off];const len=dv.getUint32(off+1,false);off+=5;
     const chunk=u8.slice(off,off+len);off+=len;
-    try{
-      const j=JSON.parse(new TextDecoder().decode(chunk));
-      if(flags&2)out.push({__end:true,endMeta:j});else out.push(j);
-    }catch(e){}
+    try{const j=JSON.parse(new TextDecoder().decode(chunk));if(flags&2)out.push({__end:true,endMeta:j});else out.push(j);}catch(e){}
   }
   return out;
 }
 
-/* ================= Novita client ================= */
+/* ---- Novita client ---- */
 class NovitaClient{
   constructor(apiKey,domain){this.apiKey=apiKey;this.domain=domain;
     this.sandbox={
@@ -492,11 +495,15 @@ class NovitaClient{
 
 class SandboxHandle{
   constructor(client,info,isDesktop){
-    this.client=client;this.sandboxId=info.sandboxId||info.id||info;this.template=info.template||info.templateID;this.isDesktop=isDesktop;
+    this.client=client;
+    this.sandboxId=normId(info);
+    this.sbxDomain=(info&&info.domain)||client.domain;
+    this.template=info&&(info.template||info.templateID);
+    this.isDesktop=isDesktop;
     this.commands={run:(cmd,opts={})=>this.runCommand(cmd,opts)};
     this.files={
       list:async(p)=>{const r=await this.runCommand(`find ${JSON.stringify(p)} -maxdepth 1 -printf '%y %s %f\\n' 2>/dev/null | tail -n +2`);
-        return (r.stdout||'').split('\n').filter(Boolean).map(l=>{const parts=l.split(' ');const t=parts[0],sz=parts[1],name=parts.slice(2).join(' ');return{name,type:t==='d'?'dir':'file',size:+sz};});},
+        return (r.stdout||'').split('\n').filter(Boolean).map(l=>{const parts=l.split(' ');return{name:parts.slice(2).join(' '),type:parts[0]==='d'?'dir':'file',size:+parts[1]};});},
       read:async(p)=>{const r=await this.runCommand('cat '+JSON.stringify(p));if((r.exitCode??0)!==0)throw new Error('read failed: '+(r.stderr||''));return r.stdout||'';},
       write:async(p,c)=>{const b=txt2b64(c);const r=await this.runCommand(`echo ${b} | base64 -d > ${JSON.stringify(p)}`);if((r.exitCode??0)!==0)throw new Error('write failed: '+(r.stderr||''));},
       remove:p=>this.runCommand('rm -rf '+JSON.stringify(p)),
@@ -515,11 +522,11 @@ class SandboxHandle{
       };
     }
   }
-  getHost(port){return port+'-'+this.sandboxId+'.'+this.client.domain;}
+  getHost(port){return port+'-'+this.sandboxId+'.'+this.sbxDomain;}
   async _rpc(method,bodyBytes,timeoutMs){
     const r=await fetchT(`/api/envd/49983/${this.sandboxId}/${method}`,{
       method:'POST',
-      headers:{'Content-Type':'application/connect+json','Connect-Protocol-Version':'1','Authorization':'Basic dXNlcjo=','X-Novita-Domain':this.client.domain},
+      headers:{'Content-Type':'application/connect+json','Connect-Protocol-Version':'1','Authorization':'Basic dXNlcjo=','X-Novita-Domain':this.sbxDomain},
       body:bodyBytes
     },timeoutMs||120000);
     const ab=await r.arrayBuffer();
@@ -530,13 +537,12 @@ class SandboxHandle{
     const tm=opts.timeoutMs||60000;
     const build=args=>concatBytes(envMsg({process:{args,envs:opts.envs||{},cwd:opts.cwd||'/home/user'}}),envEnd());
     let events=await this._rpc('process.Process/Start',build(['/bin/bash','-l','-c',cmd]),tm);
-    let end=events.find(e=>e.event&&e.event.end);
-    if(end&&end.event.end.exitCode===127){events=await this._rpc('process.Process/Start',build(['/bin/sh','-c',cmd]),tm);}
+    const endEv=events.find(e=>e.event&&e.event.end);
+    if(endEv&&endEv.event.end.exitCode===127){events=await this._rpc('process.Process/Start',build(['/bin/sh','-c',cmd]),tm);}
     let stdout='',stderr='',exitCode=0;
     for(const ev of events){
       const e=ev.event;if(!e)continue;
-      if(e.start){/*pid*/}
-      else if(e.data){if(e.data.stdout)stdout+=b64txt(e.data.stdout);if(e.data.stderr)stderr+=b64txt(e.data.stderr);}
+      if(e.data){if(e.data.stdout)stdout+=b64txt(e.data.stdout);if(e.data.stderr)stderr+=b64txt(e.data.stderr);}
       else if(e.end){exitCode=e.end.exitCode??0;}
     }
     return{stdout,stderr,exitCode};
@@ -556,11 +562,10 @@ class SandboxHandle{
   async kill(){try{await this.client.sandbox.kill(this.sandboxId);}catch(e){}}
 }
 
-/* ---------- connect ---------- */
+/* ---- connect ---- */
 $('#keyInp').value=localStorage.getItem(LS.novitaKey)||'';
 $('#geminiInp').value=localStorage.getItem(LS.geminiKey)||'';
 try{const c=JSON.parse(localStorage.getItem(LS.cfg)||'{}');if(c.domain)S.domain=c.domain;if(c.timeoutMs)S.timeoutMs=c.timeoutMs;}catch(e){}
-
 function gErrMsg(j,status){const e=j&&j.error;return e?(typeof e==='string'?e:(e.message||JSON.stringify(e))):('HTTP '+status);}
 
 async function connect(){
@@ -606,7 +611,7 @@ function disconnect(){killAll(true).finally(()=>{Object.values(LS).forEach(k=>lo
 $('#disconnectBtn').addEventListener('click',disconnect);
 $('#stDisconnect').addEventListener('click',disconnect);
 
-/* ---------- settings ---------- */
+/* ---- settings ---- */
 function populateSettingsFromLS(){
   $('#st_novitaKey').value=S.apiKey||'';$('#st_geminiKey').value=S.geminiKey||'';
   $('#st_domain').value=S.domain;$('#st_timeout').value=String(S.timeoutMs);
@@ -668,7 +673,7 @@ $('#stTestGem').addEventListener('click',async()=>{
   const k=$('#st_geminiKey').value.trim(),m=$('#st_model').value||'gemini-2.5-flash';
   if(!k)return toast('paste a key','err');
   $('#st_geminiStatus').textContent='testing…';
-  try{const j=await geminiPost('models/'+encodeURIComponent(m)+':generateContent',{contents:[{role:'user',parts:[{text:'Reply with: OK'}]}],generationConfig:{maxOutputTokens:20}});
+  try{await geminiPost('models/'+encodeURIComponent(m)+':generateContent',{contents:[{role:'user',parts:[{text:'Reply with: OK'}]}],generationConfig:{maxOutputTokens:20}});
     $('#st_geminiStatus').textContent='✔ '+m+' replied';$('#st_geminiStatus').className='statusline ok';toast('gemini ✔','ok');
   }catch(e){$('#st_geminiStatus').textContent='✖ '+e.message;$('#st_geminiStatus').className='statusline err';toast(e.message,'err');}
 });
@@ -676,7 +681,7 @@ $('#st_llmEnabled').addEventListener('change',()=>{$('#smartTog').checked=$('#st
 $('#smartTog').addEventListener('change',()=>{$('#st_llmEnabled').checked=$('#smartTog').checked;localStorage.setItem(LS.llm,$('#smartTog').checked?'1':'0');updateBadges();});
 $('#st_model').addEventListener('change',()=>{S.geminiModel=$('#st_model').value;localStorage.setItem(LS.geminiModel,S.geminiModel);updateBadges();});
 
-/* ---------- badges ---------- */
+/* ---- badges ---- */
 function chipOn(id,on){const el=$(id);if(!el)return;el.classList.toggle('on',!!on);const t=el.querySelector('.txt');if(t&&el.id.includes('Mini'))t.textContent=on?'on':'off';}
 function updChips(){
   chipOn('#chipDesk',S.desk);chipOn('#chipBrowser',S.browserSbx);chipOn('#chipShell',S.base);
@@ -697,7 +702,7 @@ function updateBadges(){
   updChips();
 }
 
-/* ---------- provisioning ---------- */
+/* ---- provisioning ---- */
 function meta(){return{app:'agent-deck'};}
 async function createDesktop(){
   stepNow('booting desktop…');
@@ -730,7 +735,7 @@ $('#btnDesk').addEventListener('click',async()=>{if(S.desk)return killSbx('desk'
 $('#btnBrowser').addEventListener('click',async()=>{if(S.browserSbx)return killSbx('browser');try{await createBrowser();await ensureBrowser(true);}catch(e){toast('chrome: '+e.message,'err');}});
 $('#btnBase').addEventListener('click',async()=>{if(S.base)return killSbx('base');try{await createBase();}catch(e){toast('utility: '+e.message,'err');}});
 
-/* ---------- live view ---------- */
+/* ---- live view ---- */
 function stopLive(){if(S.pollTimer){clearInterval(S.pollTimer);S.pollTimer=null;}$('#liveIframe').style.display='none';$('#liveIframe').src='about:blank';$('#liveImg').style.display='none';$('#liveIdle').style.display='flex';$('#liveRec').style.display='none';$('#liveModeLbl').textContent='NO FEED';$('#mbStream').classList.remove('act');$('#mbFrames').classList.remove('act');S.liveMode=null;}
 function setLiveImg(src){$('#liveIdle').style.display='none';$('#liveIframe').style.display='none';const im=$('#liveImg');im.style.display='block';im.src=src;$('#liveRec').style.display='flex';$('#liveModeLbl').textContent='FRAME FEED';$('#mbFrames').classList.add('act');$('#mbStream').classList.remove('act');}
 function setLiveIframe(url){$('#liveIdle').style.display='none';$('#liveImg').style.display='none';const f=$('#liveIframe');f.style.display='block';f.src=url;$('#liveRec').style.display='flex';$('#liveModeLbl').textContent='VNC STREAM';$('#mbStream').classList.add('act');$('#mbFrames').classList.remove('act');}
@@ -747,7 +752,7 @@ $('#mbStream').addEventListener('click',async()=>{if(S.desk)await deskStreamBtn(
 $('#mbFrames').addEventListener('click',async()=>{if(S.cdp){await browserShotBtn();}else if(S.desk){startDeskPoll();}else toast('boot a sandbox first','err');});
 $('#mbRefresh').addEventListener('click',async()=>{if(S.liveMode==='frames'){if(S.cdp)await browserShotBtn();else if(S.desk)await deskShotBtn();}else if(S.liveMode==='stream'&&S.vncUrl)setLiveIframe(S.vncUrl);});
 
-/* ---------- CDP (via proxy for /json, direct websocket) ---------- */
+/* ---- CDP ---- */
 class CDPSession{
   constructor(){this.ws=null;this.id=0;this.pending=new Map();}
   connect(url){return new Promise((res,rej)=>{this.ws=new WebSocket(url);const t=setTimeout(()=>rej(new Error('ws timeout')),15000);this.ws.onopen=()=>{clearTimeout(t);res();};this.ws.onerror=()=>{clearTimeout(t);rej(new Error('ws error'));};this.ws.onmessage=m=>{let d;try{d=JSON.parse(m.data);}catch(e){return;}if(d.id&&this.pending.has(d.id)){const p=this.pending.get(d.id);this.pending.delete(d.id);d.error?p.rej(new Error(d.error.message)):p.res(d.result);}};});}
@@ -758,10 +763,10 @@ async function cdpAttach(sbx){
   const host=sbx.getHost(9223);
   stepNow('attaching CDP …');
   let targets=[];
-  for(let i=0;i<10;i++){try{const r=await fetchT(`/api/cdp/${sbx.sandboxId}/json`,{headers:{'X-Novita-Domain':S.domain,'X-Novita-Key':S.apiKey}},6000);targets=await r.json();break;}catch(e){await sleep(1200);}}
+  for(let i=0;i<10;i++){try{const r=await fetchT(`/api/cdp/${sbx.sandboxId}/json`,{headers:{'X-Novita-Domain':sbx.sbxDomain||S.domain,'X-Novita-Key':S.apiKey}},6000);targets=await r.json();break;}catch(e){await sleep(1200);}}
   if(!targets.length)throw new Error('CDP unreachable');
   let page=targets.find(t=>t.type==='page');
-  if(!page){try{const r=await fetchT(`/api/cdp/${sbx.sandboxId}/json/new?about:blank`,{method:'PUT',headers:{'X-Novita-Domain':S.domain,'X-Novita-Key':S.apiKey}});page=await r.json();}catch(e){throw new Error('no page target');}}
+  if(!page){try{const r=await fetchT(`/api/cdp/${sbx.sandboxId}/json/new?about:blank`,{method:'PUT',headers:{'X-Novita-Domain':sbx.sbxDomain||S.domain,'X-Novita-Key':S.apiKey}});page=await r.json();}catch(e){throw new Error('no page target');}}
   const path=(page.webSocketDebuggerUrl||'').replace(/^wss?:\/\/[^\/]+/,'');
   const sess=new CDPSession();await sess.connect('wss://'+host+path);
   await sess.send('Page.enable');await sess.send('Runtime.enable');
@@ -776,7 +781,7 @@ function fillField(idx,value){const els=[...document.querySelectorAll('input,tex
 function clickButton(filter){const vis=el=>{const r=el.getBoundingClientRect();const st=getComputedStyle(el);return r.width>2&&r.height>2&&st.visibility!=='hidden'&&st.display!=='none';};const btns=[...document.querySelectorAll('button,input[type=submit],a[role=button]')].filter(vis);let t=null;try{const re=new RegExp(filter,'i');t=btns.find(b=>re.test((b.innerText||b.value||b.getAttribute('aria-label')||'')+''));}catch(e){}if(!t)t=btns.find(b=>b.type==='submit');if(!t)t=btns[0];if(t){t.click();return((t.innerText||t.value||'')+'').trim().slice(0,40)||'clicked';}return null;}
 function pickField(fields,mode){let i=mode==='signup'?fields.findIndex(f=>/user|email|name/i.test((f.name+' '+f.id+' '+f.placeholder))):fields.findIndex(f=>f.type==='email');if(i>=0)return i;i=fields.findIndex(f=>/user|email|login|acct|account/i.test((f.name+' '+f.id+' '+f.autocomplete)));if(i>=0)return i;i=fields.findIndex(f=>/user|email|login/i.test((f.placeholder+' '+f.aria)));if(i>=0)return i;return fields.findIndex(f=>f.type==='text');}
 
-/* ---------- login mission ---------- */
+/* ---- login mission ---- */
 function openLoginModal(){$('#loginModal').classList.add('on');}
 function closeLoginModal(){$('#loginModal').classList.remove('on');}
 $('#btnLogin').addEventListener('click',openLoginModal);
@@ -798,7 +803,7 @@ async function agentLogin(url,user,pass,mode){
 }
 async function safeBrowserShot(){try{const r=await S.cdp.send('Page.captureScreenshot',{format:'png'});const src='data:image/png;base64,'+r.data;setLiveImg(src);return src;}catch(e){return null;}}
 
-/* ---------- terminal ---------- */
+/* ---- terminal ---- */
 const termHist=[];let termPtr=0;
 function termPrint(cls,text){const o=$('#termOut');o.innerHTML+='<span class="'+cls+'">'+esc(text)+'</span>';o.scrollTop=o.scrollHeight;}
 async function shellSbx(){const t=$('#termTarget').value;if(t==='desk'||(t==='auto'&&S.desk)){if(!S.desk)await createDesktop();return S.desk;}if(t==='browser'||(t==='auto'&&S.browserSbx&&!S.desk)){if(!S.browserSbx)await createBrowser();return S.browserSbx;}if(!S.base)await createBase();return S.base;}
@@ -807,7 +812,7 @@ $('#termRunBtn').addEventListener('click',()=>termRun());
 $('#termInp').addEventListener('keydown',e=>{if(e.key==='Enter')termRun();else if(e.key==='ArrowUp'){termPtr=Math.max(0,termPtr-1);$('#termInp').value=termHist[termPtr]||'';e.preventDefault();}else if(e.key==='ArrowDown'){termPtr=Math.min(termHist.length,termPtr+1);$('#termInp').value=termHist[termPtr]||'';e.preventDefault();}});
 $$('[data-cmd]').forEach(b=>b.addEventListener('click',()=>termRun(b.dataset.cmd)));
 
-/* ---------- files ---------- */
+/* ---- files ---- */
 async function fileSbx(){if(S.desk)return S.desk;if(!S.base)await createBase();return S.base;}
 async function listDir(p){const path=p||$('#pathInp').value.trim()||'/home/user';$('#pathInp').value=path;const box=$('#fileList');box.innerHTML='<div class="file-row">loading…</div>';try{const sbx=await fileSbx();const entries=await sbx.files.list(path);box.innerHTML='';if(!entries.length)box.innerHTML='<div class="file-row">empty</div>';for(const e of entries){const row=document.createElement('div');row.className='file-row';const isDir=e.type==='dir';row.innerHTML='<span class="ic">'+(isDir?'📁':'')+'</span><span>'+esc(e.name)+'</span>';row.addEventListener('click',()=>{const np=path.replace(/\/$/,'')+'/'+e.name;if(isDir)listDir(np);else{$('#editPath').value=np;readFile();}});box.appendChild(row);}}catch(e){box.innerHTML='<div class="file-row">'+esc(e.message)+'</div>';}}
 $('#filesGo').addEventListener('click',()=>listDir());
@@ -821,7 +826,7 @@ $('#fileWrite').addEventListener('click',writeFile);
 $('#fileMkdir').addEventListener('click',mkDir);
 $('#fileRm').addEventListener('click',rmFile);
 
-/* ---------- agent brain ---------- */
+/* ---- agent brain ---- */
 function quick(t){$('#chatInput').value=t;sendChat();}
 $('#chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
 $('#sendBtn').addEventListener('click',sendChat);
@@ -944,14 +949,14 @@ async function execStep(st,i,n){
   }
 }
 
-/* ---------- tabs ---------- */
+/* ---- tabs ---- */
 function switchSide(t){$$('.side-tabs button').forEach(b=>b.classList.toggle('act',b.dataset.side===t));$$('.side-panel').forEach(p=>p.classList.toggle('act',p.id==='sp-'+t));if(t==='settings')populateSettingsFromLS();}
 $('#tabMission').addEventListener('click',()=>switchSide('mission'));
 $('#tabTerminal').addEventListener('click',()=>switchSide('terminal'));
 $('#tabFiles').addEventListener('click',()=>switchSide('files'));
 $('#tabSettings').addEventListener('click',()=>switchSide('settings'));
 
-/* ---------- init ---------- */
+/* ---- init ---- */
 try{updChips();}catch(e){}
 try{populateSettingsFromLS();}catch(e){}
 try{updateBadges();}catch(e){}
@@ -959,4 +964,4 @@ try{fetchT('/api/version',{},5000).then(r=>r.json()).then(j=>{$('#gateVer').text
 console.log('AGENT//DECK v'+APP_VERSION+' loaded ✔');
 </script>
 </body>
-  </html>
+</html>
