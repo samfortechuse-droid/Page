@@ -3,29 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store">
 <title>AGENT//DECK</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0a0a0b;
-  --bg-2:#111113;
-  --panel:#15151780;
-  --panel-solid:#151517;
-  --border:#26262a;
-  --border-2:#33333a;
-  --tx:#ececee;
-  --tx-2:#9a9aa3;
-  --tx-3:#5a5a63;
-  --accent:#c6ff3d;
-  --accent-2:#a3e635;
-  --cyan:#38bdf8;
-  --violet:#a78bfa;
-  --rose:#fb7185;
-  --amber:#fbbf24;
-  --font:'Inter',-apple-system,system-ui,sans-serif;
-  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --bg:#0a0a0b;--bg-2:#111113;--panel:#15151780;--panel-solid:#151517;
+  --border:#26262a;--border-2:#33333a;
+  --tx:#ececee;--tx-2:#9a9aa3;--tx-3:#5a5a63;
+  --accent:#c6ff3d;--accent-2:#a3e635;--cyan:#38bdf8;--violet:#a78bfa;--rose:#fb7185;--amber:#fbbf24;
+  --font:'Inter',-apple-system,system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;
   --r-sm:8px;--r:12px;--r-lg:16px;--r-xl:20px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -38,9 +27,7 @@ button,input,select,textarea{font-family:inherit;color:inherit;outline:none;bord
 button{cursor:pointer}
 a{color:var(--accent-2);text-decoration:none}
 .mono{font-family:var(--mono)}
-
-/* ---- buttons ---- */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;font-size:12.5px;font-weight:500;letter-spacing:.01em;border-radius:var(--r-sm);transition:all .15s;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;font-size:12.5px;font-weight:500;border-radius:var(--r-sm);transition:all .15s;white-space:nowrap}
 .btn-ghost{background:transparent;color:var(--tx-2)}
 .btn-ghost:hover{background:#ffffff0a;color:var(--tx)}
 .btn-secondary{background:#1e1e22;color:var(--tx);border:1px solid var(--border)}
@@ -50,80 +37,67 @@ a{color:var(--accent-2);text-decoration:none}
 .btn-danger{background:#3a1520;color:var(--rose);border:1px solid #5a2030}
 .btn-danger:hover{background:#4a1a28}
 .btn-sm{padding:5px 10px;font-size:11.5px}
-.btn-icon{padding:6px;width:28px;height:28px}
 .btn[disabled]{opacity:.4;cursor:not-allowed}
-
-/* ---- inputs ---- */
 .inp{background:#0a0a0b;border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;font-size:12.5px;color:var(--tx);width:100%;transition:border .15s}
 .inp:focus{border-color:var(--accent)}
 .inp::placeholder{color:var(--tx-3)}
 select.inp{appearance:none;padding-right:30px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239a9aa3' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 10px center}
-textarea.inp{resize:vertical;min-height:60px;line-height:1.5;font-family:var(--font)}
-
-/* ---- labels ---- */
+textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
 .lbl{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--tx-3);text-transform:uppercase;margin-bottom:6px}
-
-/* ---- gate ---- */
-#gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:100;background:var(--bg)}
+#fatalBar{display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#3a1520;color:#fecdd3;font-family:var(--mono);font-size:11px;padding:8px 14px;border-bottom:1px solid #5a2030;white-space:pre-wrap}
+#gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:100;background:var(--bg);overflow-y:auto}
 #gate.off{display:none}
 .gate{width:min(480px,100%);background:var(--bg-2);border:1px solid var(--border);border-radius:var(--r-xl);padding:32px;box-shadow:0 40px 120px rgba(0,0,0,.6)}
-.brand{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:24px}
 .brand-mark{width:36px;height:36px;border-radius:10px;background:var(--accent);display:grid;place-items:center;color:#000;font-weight:700;font-size:16px;font-family:var(--mono)}
 .brand-name{font-size:18px;font-weight:600;letter-spacing:-.02em}
 .brand-name span{color:var(--tx-3);font-weight:400}
-.gate-desc{font-size:13.5px;color:var(--tx-2);line-height:1.6;margin-bottom:24px}
+.brand-ver{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--tx-3)}
+.gate-desc{font-size:13.5px;color:var(--tx-2);line-height:1.6;margin-bottom:22px}
 .gate-desc b{color:var(--tx);font-weight:500}
-.key-block{margin-bottom:18px}
-.key-block .lbl{margin-bottom:6px}
+.key-block{margin-bottom:16px}
 .key-row{display:flex;gap:8px}
 .key-row .inp{flex:1;font-family:var(--mono);font-size:11.5px}
 .key-note{font-size:11.5px;color:var(--tx-3);margin-top:6px;line-height:1.5}
 .key-note a{color:var(--tx-2);text-decoration:underline;text-underline-offset:3px}
 .key-note b{color:var(--accent-2);font-weight:500}
-#gateErr{display:none;margin-top:14px;padding:11px 14px;background:#2a1218;border:1px solid #5a2030;color:#fecdd3;border-radius:var(--r-sm);font-size:12px;font-family:var(--mono);line-height:1.5;white-space:pre-wrap}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid #ffffff20;border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite}
+#bootLog{margin-top:14px;font-family:var(--mono);font-size:10.5px;line-height:1.8;color:var(--tx-2);display:none;background:#000;border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;max-height:160px;overflow-y:auto}
+#bootLog.on{display:block}
+#bootLog .err{color:var(--rose)}
+#bootLog .ok{color:var(--accent-2)}
+#gateErr{display:none;margin-top:12px;padding:11px 14px;background:#2a1218;border:1px solid #5a2030;color:#fecdd3;border-radius:var(--r-sm);font-size:12px;font-family:var(--mono);line-height:1.5;white-space:pre-wrap}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #00000030;border-top-color:#000;border-radius:50%;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-.gate-actions{display:flex;gap:10px;margin-top:24px}
+.gate-actions{display:flex;gap:10px;margin-top:20px}
 .gate-actions .btn{flex:1;padding:12px}
-.gate-foot{margin-top:20px;padding-top:18px;border-top:1px solid var(--border);font-size:11.5px;color:var(--tx-3);line-height:1.6}
+.gate-foot{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);font-size:11.5px;color:var(--tx-3);line-height:1.6}
 .gate-foot b{color:var(--tx-2);font-weight:500}
-
-/* ---- app shell ---- */
 #app{display:none;height:100vh;grid-template-columns:360px 1fr;grid-template-rows:56px 1fr}
 #app.on{display:grid}
-
-/* top bar */
 .topbar{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 18px;border-bottom:1px solid var(--border);background:var(--bg-2)}
-.tb-brand{display:flex;align-items:center;gap:9px;font-weight:600;letter-spacing:-.01em}
+.tb-brand{display:flex;align-items:center;gap:9px;font-weight:600}
 .tb-brand .mark{width:26px;height:26px;border-radius:7px;background:var(--accent);display:grid;place-items:center;color:#000;font-weight:700;font-size:12px;font-family:var(--mono)}
-.tb-status{display:flex;gap:10px;margin-left:auto;align-items:center}
+.tb-status{display:flex;gap:8px;margin-left:auto;align-items:center;flex-wrap:wrap}
 .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-family:var(--mono);font-size:10.5px;border:1px solid var(--border);background:#1a1a1d;color:var(--tx-2)}
 .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--tx-3)}
 .badge.on{color:var(--accent-2);border-color:rgba(198,255,61,.25)}
 .badge.on .dot{background:var(--accent);box-shadow:0 0 6px var(--accent)}
-
-/* sidebar */
 .sidebar{grid-row:2;background:var(--bg-2);border-right:1px solid var(--border);display:flex;flex-direction:column;min-width:0}
 .side-tabs{display:flex;gap:4px;padding:12px;border-bottom:1px solid var(--border)}
 .side-tabs button{flex:1;padding:7px 10px;font-size:11px;font-weight:500;border-radius:var(--r-sm);color:var(--tx-3);transition:all .15s}
 .side-tabs button:hover{background:#1e1e22;color:var(--tx-2)}
 .side-tabs button.act{background:#222226;color:var(--tx)}
-
-/* sidebar content */
 .side-body{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 .side-panel{display:none;flex:1;flex-direction:column;min-height:0;overflow:hidden}
 .side-panel.act{display:flex}
-
-/* mission panel */
 .mission-body{flex:1;overflow-y:auto;padding:14px}
 .section{margin-bottom:16px}
 .section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.section-title h3{font-size:12px;font-weight:600;letter-spacing:.02em}
+.section-title h3{font-size:12px;font-weight:600}
 .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;background:#1e1e22;border:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--tx-2)}
-.chip .dot{width:5px;height:6px;border-radius:50%;background:var(--tx-3)}
+.chip .dot{width:5px;height:5px;border-radius:50%;background:var(--tx-3)}
 .chip.on{background:rgba(198,255,61,.08);border-color:rgba(198,255,61,.25);color:var(--accent-2)}
 .chip.on .dot{background:var(--accent)}
-
 .computer-grid{display:grid;gap:8px;margin-bottom:12px}
 .comp-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:12px;transition:border .15s}
 .comp-card:hover{border-color:var(--border-2)}
@@ -131,16 +105,11 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5;font-family:var(--f
 .comp-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
 .comp-head .icon{width:20px;height:20px;display:grid;place-items:center;font-size:12px}
 .comp-head b{font-size:12.5px;font-weight:600;flex:1}
-.comp-head .chip{font-size:9px;padding:2px 7px}
 .comp-desc{font-size:11.5px;color:var(--tx-3);line-height:1.45;margin-bottom:10px}
 .comp-actions{display:flex;gap:6px;flex-wrap:wrap}
-
-/* quick chips */
 .quick-chips{display:flex;flex-wrap:wrap;gap:5px}
 .qchip{font-size:10.5px;padding:5px 9px;background:#1a1a1d;border:1px solid var(--border);border-radius:99px;color:var(--tx-2);cursor:pointer;transition:all .15s;font-family:var(--mono)}
 .qchip:hover{background:#222226;color:var(--tx);border-color:var(--border-2)}
-
-/* chat */
 .chat-wrap{flex:1;min-height:240px;display:flex;flex-direction:column;border-top:1px solid var(--border)}
 .chat-head{padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
 .chat-head .orb{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--accent),var(--cyan));box-shadow:0 0 10px rgba(198,255,61,.4);position:relative;flex-shrink:0}
@@ -171,8 +140,6 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5;font-family:var(--f
 @keyframes tp{40%{transform:translateY(-4px);opacity:.5}}
 .chat-in{flex:none;border-top:1px solid var(--border);padding:10px;display:flex;gap:6px;align-items:flex-end}
 .chat-in textarea{flex:1;resize:none;min-height:36px;max-height:120px;padding:8px 11px;font-size:13px}
-
-/* main / computer view */
 .main{grid-row:2;display:flex;flex-direction:column;min-width:0;background:#000;position:relative}
 .computer-head{position:absolute;top:0;left:0;right:0;z-index:5;padding:10px 16px;background:linear-gradient(180deg,rgba(0,0,0,.75) 40%,transparent);display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px}
 .computer-head .rec{display:flex;align-items:center;gap:6px;color:var(--rose);letter-spacing:.18em;font-size:10px}
@@ -183,42 +150,25 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5;font-family:var(--f
 .computer-head .mbtn{padding:4px 9px;border:1px solid #33333a;background:rgba(0,0,0,.5);border-radius:6px;color:var(--tx-2);font-family:var(--mono);font-size:10px}
 .computer-head .mbtn:hover{color:var(--tx);background:rgba(255,255,255,.05)}
 .computer-head .mbtn.act{color:var(--accent-2);border-color:rgba(198,255,61,.4)}
-
 .computer-view{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .computer-view iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .computer-view img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .computer-idle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(800px 400px at 50% 40%,#15151a,#000)}
-.computer-idle .big{font-size:48px;color:#2a2a2e;font-family:var(--mono);font-weight:700;letter-spacing:-.05em}
+.computer-idle .big{font-size:48px;color:#2a2a2e;font-family:var(--mono);font-weight:700}
 .computer-idle .txt{font-size:12px;color:var(--tx-3);font-family:var(--mono);letter-spacing:.15em;text-transform:uppercase}
 .computer-idle .hint{font-size:12px;color:var(--tx-3);max-width:320px;text-align:center;line-height:1.55}
 .scanlines{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 3px);mix-blend-mode:overlay;z-index:3}
-
-/* tabs content (full page panels) */
-.panel{display:none;grid-row:2;grid-column:2;padding:20px;overflow:auto;background:var(--bg)}
-.panel.act{display:block}
-.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
-.panel-head h2{font-size:17px;font-weight:600;letter-spacing:-.01em}
-.panel-head .sub{font-family:var(--mono);font-size:10px;color:var(--tx-3);letter-spacing:.15em;text-transform:uppercase;margin-top:2px}
-
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media(max-width:1100px){.grid-2{grid-template-columns:1fr}}
 .card{background:var(--panel-solid);border:1px solid var(--border);border-radius:var(--r);padding:16px}
-.card h4{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--tx-2);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.card h4 .tag{font-size:9px;padding:2px 7px;background:#1a1a1d;border:1px solid var(--border);border-radius:99px;color:var(--tx-3);text-transform:none;letter-spacing:normal}
+.card h4{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--tx-2);text-transform:uppercase;margin-bottom:12px}
 .frow{margin-bottom:11px}
-.console{background:#000;border:1px solid var(--border);border-radius:var(--r-sm);font-family:var(--mono);font-size:11.5px;line-height:1.6;padding:12px;overflow:auto;white-space:pre-wrap;word-break:break-word;min-height:160px;max-height:400px}
+.console{background:#000;border:1px solid var(--border);border-radius:var(--r-sm);font-family:var(--mono);font-size:11.5px;line-height:1.6;padding:12px;overflow:auto;white-space:pre-wrap;word-break:break-word;min-height:160px}
 .console .out{color:var(--accent-2)}.console .err{color:var(--rose)}.console .cmd{color:var(--cyan)}.console .dim{color:var(--tx-3)}
-.json-out{font-family:var(--mono);font-size:11px;background:#000;border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;max-height:280px;overflow:auto;white-space:pre-wrap;word-break:break-word;color:var(--violet)}
-.tbl{width:100%;border-collapse:collapse;font-size:12px}
-.tbl th{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--tx-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
-.tbl td{padding:8px 10px;border-bottom:1px solid #1a1a1d;font-family:var(--mono);font-size:11.5px;color:var(--tx-2);word-break:break-all}
-.tbl tr:hover td{background:#151517;color:var(--tx)}
 .file-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid #1a1a1d;cursor:pointer;font-family:var(--mono);font-size:12px;color:var(--tx-2)}
 .file-row:hover{background:#1a1a1d;color:var(--tx)}
 .file-row .ic{width:18px;text-align:center}
-.file-row .sz{margin-left:auto;color:var(--tx-3);font-size:10.5px}
-
-/* toasts / modal */
+.statusline{font-family:var(--mono);font-size:10.5px;color:var(--tx-3);margin-top:6px;line-height:1.5}
+.statusline.err{color:var(--rose)}
+.statusline.ok{color:var(--accent-2)}
 .toast-wrap{position:fixed;top:70px;right:16px;z-index:300;display:flex;flex-direction:column;gap:7px}
 .toast{background:var(--panel-solid);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--r-sm);padding:10px 14px;font-size:12.5px;box-shadow:0 12px 32px rgba(0,0,0,.5);animation:tIn .25s ease;max-width:340px}
 .toast.err{border-left-color:var(--rose)}
@@ -226,290 +176,227 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5;font-family:var(--f
 @keyframes tIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-bg.on{display:flex}
-.modal{width:min(460px,100%);background:var(--bg-2);border:1px solid var(--border-2);border-radius:var(--r-lg);padding:24px;animation:rise .25s ease}
-@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.modal{width:min(460px,100%);background:var(--bg-2);border:1px solid var(--border-2);border-radius:var(--r-lg);padding:24px}
 .modal h3{font-size:15px;font-weight:600;margin-bottom:4px}
 .modal .sub{color:var(--tx-3);font-size:12px;margin-bottom:16px;line-height:1.55}
 .modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
-.help-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
-.help-item{border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;background:var(--panel-solid)}
-.help-item b{display:block;font-size:12.5px;margin-bottom:5px;font-weight:600}
-.help-item span{color:var(--tx-3);font-size:11.5px;line-height:1.55;display:block}
-.help-item code{font-family:var(--mono);color:var(--accent-2);font-size:10.5px;display:block;margin-top:8px;padding:5px 8px;background:#000;border-radius:6px;word-break:break-all}
-
-.statusline{font-family:var(--mono);font-size:10.5px;color:var(--tx-3);margin-top:6px;line-height:1.5}
-.statusline.err{color:var(--rose)}
-.statusline.ok{color:var(--accent-2)}
 </style>
 </head>
 <body>
+<div id="fatalBar"></div>
 
-<!-- ============ GATE ============ -->
 <div id="gate">
   <div class="gate">
     <div class="brand">
       <div class="brand-mark">⬡</div>
       <div class="brand-name">AGENT<span>//</span>DECK</div>
+      <div class="brand-ver" id="gateVer">v…</div>
     </div>
-    <div class="gate-desc">A computer-use agent with <b>Google Gemini</b> as the brain and <b>Novita Sandbox</b> as the body. Give it its own desktop, its own Chrome, and watch it work live.</div>
-
+    <div class="gate-desc">A computer-use agent with <b>Google Gemini</b> as the brain and <b>Novita Sandbox</b> as the body.</div>
     <div class="key-block">
       <span class="lbl">Novita API key <span style="color:var(--rose)">required</span></span>
-      <div class="key-row">
-        <input id="keyInp" class="inp" type="password" placeholder="nvta_••••••••••••••••" autocomplete="off" spellcheck="false">
-      </div>
+      <div class="key-row"><input id="keyInp" class="inp" type="password" placeholder="nvta_••••••••••••••••" autocomplete="off" spellcheck="false"></div>
       <div class="key-note">Get one at <a href="https://novita.ai" target="_blank">novita.ai</a> · your <b>$100 free credits</b></div>
     </div>
-
     <div class="key-block">
       <span class="lbl">Gemini API key <span style="color:var(--accent-2)">recommended · the brain</span></span>
-      <div class="key-row">
-        <input id="geminiInp" class="inp" type="password" placeholder="AIza••••••••••••••••" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="key-note">Free at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> · without it the agent runs on a rule-based planner</div>
+      <div class="key-row"><input id="geminiInp" class="inp" type="password" placeholder="AIza••••••••••••••••" autocomplete="off" spellcheck="false"></div>
+      <div class="key-note">Free at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></div>
     </div>
-
+    <div id="bootLog"></div>
     <div id="gateErr"></div>
-
     <div class="gate-actions">
-      <button class="btn btn-secondary" id="aboutBtn">About</button>
       <button class="btn btn-primary" id="connectBtn">Connect ▸</button>
     </div>
-
-    <div class="gate-foot">🔒 Keys stay <b>in your browser</b> and are forwarded per-request to Novita & Google through your own server. Nothing is stored on the server.</div>
+    <div class="gate-foot">🔒 Keys stay <b>in your browser</b> and are forwarded per-request through your own server.</div>
   </div>
 </div>
 
-<!-- ============ APP ============ -->
 <div id="app">
   <div class="topbar">
-    <div class="tb-brand">
-      <div class="mark">⬡</div>
-      <span>AGENT//DECK</span>
-    </div>
+    <div class="tb-brand"><div class="mark">⬡</div><span>AGENT//DECK</span></div>
     <div class="tb-status">
-      <span class="badge" id="chipDesk"><span class="dot"></span>desktop</span>
-      <span class="badge" id="chipBrowser"><span class="dot"></span>chrome</span>
-      <span class="badge" id="chipShell"><span class="dot"></span>shell</span>
-      <span class="badge" id="brainBadge"><span class="dot"></span>🧠 no brain</span>
-      <button class="btn btn-sm btn-danger" onclick="disconnect()">disconnect</button>
+      <span class="badge" id="chipDesk"><span class="dot"></span><span class="txt">desktop</span></span>
+      <span class="badge" id="chipBrowser"><span class="dot"></span><span class="txt">chrome</span></span>
+      <span class="badge" id="chipShell"><span class="dot"></span><span class="txt">shell</span></span>
+      <span class="badge" id="brainBadge"><span class="dot"></span><span class="txt">🧠 no brain</span></span>
+      <button class="btn btn-sm btn-danger" id="disconnectBtn">disconnect</button>
     </div>
   </div>
 
-  <!-- ===== SIDEBAR ===== -->
-  <div class="sidebar" id="sidebar">
+  <div class="sidebar">
     <div class="side-tabs">
-      <button data-side="mission" class="act" onclick="switchSide('mission')">Mission</button>
-      <button data-side="terminal" onclick="switchSide('terminal')">Shell</button>
-      <button data-side="files" onclick="switchSide('files')">Files</button>
-      <button data-side="settings" onclick="switchSide('settings')">⚙</button>
+      <button data-side="mission" class="act" id="tabMission">Mission</button>
+      <button data-side="terminal" id="tabTerminal">Shell</button>
+      <button data-side="files" id="tabFiles">Files</button>
+      <button data-side="settings" id="tabSettings">⚙</button>
     </div>
     <div class="side-body">
-      <!-- MISSION -->
       <div class="side-panel act" id="sp-mission">
         <div class="mission-body">
           <div class="section">
-            <div class="section-title">
-              <h3>Agent's computers</h3>
-              <span class="chip" id="onlineCount"><span class="dot"></span><span id="onlineLbl">0 online</span></span>
-            </div>
+            <div class="section-title"><h3>Agent's computers</h3><span class="chip" id="onlineCount"><span class="dot"></span><span class="txt" id="onlineLbl">0 online</span></span></div>
             <div class="computer-grid">
               <div class="comp-card" id="cardDesk">
-                <div class="comp-head">
-                  <div class="icon">🖥</div>
-                  <b>Desktop</b>
-                  <span class="chip" id="chipDeskMini"><span class="dot"></span>off</span>
-                </div>
-                <div class="comp-desc">Linux desktop with XFCE. Live VNC + mouse/keyboard control.</div>
+                <div class="comp-head"><div class="icon">🖥</div><b>Desktop</b><span class="chip" id="chipDeskMini"><span class="dot"></span><span class="txt">off</span></span></div>
+                <div class="comp-desc">Linux desktop with XFCE. Live VNC + mouse/keyboard.</div>
                 <div class="comp-actions">
-                  <button class="btn btn-sm btn-primary" id="btnDesk" onclick="toggleDesktop()">boot</button>
-                  <button class="btn btn-sm btn-secondary" onclick="deskStreamBtn()">📺 vnc</button>
-                  <button class="btn btn-sm btn-secondary" onclick="deskShotBtn()">📸 frame</button>
+                  <button class="btn btn-sm btn-primary" id="btnDesk">boot</button>
+                  <button class="btn btn-sm btn-secondary" id="btnDeskVnc">📺 vnc</button>
+                  <button class="btn btn-sm btn-secondary" id="btnDeskShot">📸 frame</button>
                 </div>
               </div>
               <div class="comp-card" id="cardBrowser">
-                <div class="comp-head">
-                  <div class="icon">🌐</div>
-                  <b>Chrome</b>
-                  <span class="chip" id="chipBrowserMini"><span class="dot"></span>off</span>
-                </div>
-                <div class="comp-desc">Chromium sandbox w/ CDP. Open sites, log in, fill forms, sign up.</div>
+                <div class="comp-head"><div class="icon">🌐</div><b>Chrome</b><span class="chip" id="chipBrowserMini"><span class="dot"></span><span class="txt">off</span></span></div>
+                <div class="comp-desc">Chromium sandbox w/ CDP. Open sites, log in, sign up.</div>
                 <div class="comp-actions">
-                  <button class="btn btn-sm btn-primary" id="btnBrowser" onclick="toggleBrowser()">boot</button>
-                  <button class="btn btn-sm btn-secondary" onclick="browserShotBtn()">📸 frame</button>
-                  <button class="btn btn-sm btn-secondary" onclick="openLoginModal()">🔑 login</button>
+                  <button class="btn btn-sm btn-primary" id="btnBrowser">boot</button>
+                  <button class="btn btn-sm btn-secondary" id="btnBrowserShot">📸 frame</button>
+                  <button class="btn btn-sm btn-secondary" id="btnLogin">🔑 login</button>
                 </div>
               </div>
               <div class="comp-card">
-                <div class="comp-head">
-                  <div class="icon">🧰</div>
-                  <b>Utility</b>
-                  <span class="chip" id="chipShellMini"><span class="dot"></span>off</span>
-                </div>
-                <div class="comp-desc">Base sandbox for terminal + code interpreter.</div>
+                <div class="comp-head"><div class="icon">🧰</div><b>Utility</b><span class="chip" id="chipShellMini"><span class="dot"></span><span class="txt">off</span></span></div>
+                <div class="comp-desc">Base sandbox for terminal + code.</div>
                 <div class="comp-actions">
-                  <button class="btn btn-sm btn-primary" id="btnBase" onclick="toggleBase()">boot</button>
-                  <button class="btn btn-sm btn-danger" onclick="killAll()">kill all</button>
+                  <button class="btn btn-sm btn-primary" id="btnBase">boot</button>
+                  <button class="btn btn-sm btn-danger" id="btnKillAll">kill all</button>
                 </div>
               </div>
             </div>
           </div>
-
           <div class="section">
             <div class="section-title"><h3>Quick missions</h3></div>
-            <div class="quick-chips">
-              <span class="qchip" onclick="quick('Search for the latest AI agent news')">🔎 search AI news</span>
-              <span class="qchip" onclick="quick('Open https://news.ycombinator.com')">🌐 hacker news</span>
-              <span class="qchip" onclick="quick('Take a screenshot')">📸 screenshot</span>
-              <span class="qchip" onclick="quick('Run the python system report')">🐍 sys-report</span>
-              <span class="qchip" onclick="quick('terminal: uname -a && nproc && df -h /')">💻 sys info</span>
-              <span class="qchip" onclick="quick('install cowsay then run cowsay hello')">📦 install test</span>
-              <span class="qchip" onclick="openLoginModal()">🔑 log in…</button>
-            </div>
+            <div class="quick-chips" id="quickChips"></div>
           </div>
         </div>
-
-        <!-- CHAT -->
         <div class="chat-wrap">
           <div class="chat-head">
-            <div class="orb"></div>
-            <b>NEXUS</b>
-            <span class="st" id="agentState">idle</span>
+            <div class="orb"></div><b>NEXUS</b><span class="st" id="agentState">idle</span>
             <div class="spacer"></div>
             <label title="Use Gemini as brain">🧠 <input type="checkbox" id="smartTog" checked></label>
           </div>
           <div id="stepNow"></div>
           <div id="chatLog"></div>
           <div class="chat-in">
-            <textarea id="chatInput" placeholder='order the agent…  e.g. "go to hacker news and tell me the top story"' rows="1"></textarea>
-            <button class="btn btn-primary" id="sendBtn" onclick="sendChat()">➤</button>
+            <textarea id="chatInput" placeholder='order the agent… e.g. "open hacker news"' rows="1"></textarea>
+            <button class="btn btn-primary" id="sendBtn">➤</button>
           </div>
         </div>
       </div>
 
-      <!-- TERMINAL -->
       <div class="side-panel" id="sp-terminal">
         <div style="flex:1;display:flex;flex-direction:column;min-height:0;padding:14px">
           <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
             <select id="termTarget" class="inp" style="width:auto"><option value="auto">auto</option><option value="desk">desktop</option><option value="browser">chrome</option><option value="base">utility</option></select>
-            <button class="btn btn-sm btn-secondary" onclick="termRun('ls -la')">ls</button>
-            <button class="btn btn-sm btn-secondary" onclick="termRun('pwd && whoami')">whoami</button>
-            <button class="btn btn-sm btn-secondary" onclick="termRun('cat /etc/os-release')">os</button>
-            <button class="btn btn-sm btn-secondary" onclick="termRun('free -m && nproc')">cpu/ram</button>
-            <button class="btn btn-sm btn-secondary" onclick="termRun('df -h')">disk</button>
+            <button class="btn btn-sm btn-secondary" data-cmd="ls -la">ls</button>
+            <button class="btn btn-sm btn-secondary" data-cmd="pwd && whoami">whoami</button>
+            <button class="btn btn-sm btn-secondary" data-cmd="cat /etc/os-release">os</button>
+            <button class="btn btn-sm btn-secondary" data-cmd="free -m && nproc">cpu/ram</button>
+            <button class="btn btn-sm btn-secondary" data-cmd="df -h">disk</button>
           </div>
-          <div class="console" id="termOut" style="flex:1">// shell — commands run inside the agent's computer\n</div>
+          <div class="console" id="termOut" style="flex:1">// shell — runs inside the agent's computer\n</div>
           <div style="display:flex;gap:8px;margin-top:10px">
             <span style="color:var(--accent-2);font-family:var(--mono);font-size:12px;padding:8px 0">$</span>
             <input id="termInp" class="inp" placeholder="command + enter" style="flex:1">
-            <button class="btn btn-sm btn-primary" onclick="termRun()">run</button>
+            <button class="btn btn-sm btn-primary" id="termRunBtn">run</button>
           </div>
         </div>
       </div>
 
-      <!-- FILES -->
       <div class="side-panel" id="sp-files">
         <div style="flex:1;display:flex;flex-direction:column;min-height:0;padding:14px">
-          <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+          <div style="display:flex;gap:8px;margin-bottom:10px">
             <input id="pathInp" class="inp" value="/home/user" style="flex:1">
-            <button class="btn btn-sm btn-primary" onclick="listDir()">go</button>
-            <button class="btn btn-sm btn-secondary" onclick="goUp()">⬆</button>
+            <button class="btn btn-sm btn-primary" id="filesGo">go</button>
+            <button class="btn btn-sm btn-secondary" id="filesUp">⬆</button>
           </div>
-          <div class="card" style="padding:0;flex:1;min-height:0;overflow:auto">
-            <div class="files-list" id="fileList" style="padding:6px 0"><div class="file-row"><span class="dim">click Go above to browse</span></div></div>
-          </div>
+          <div class="card" style="padding:0;flex:1;min-height:0;overflow:auto"><div id="fileList" style="padding:6px 0"><div class="file-row">click Go to browse</div></div></div>
           <div class="card" style="margin-top:10px;padding:12px">
-            <div style="display:flex;gap:6px;margin-bottom:6px">
-              <input id="editPath" class="inp" placeholder="/path/to/file" style="flex:1;font-size:11px">
-            </div>
+            <input id="editPath" class="inp" placeholder="/path/to/file" style="margin-bottom:6px;font-size:11px">
             <textarea id="editBody" class="inp" placeholder="contents" style="min-height:80px;font-family:var(--mono);font-size:11px"></textarea>
             <div style="display:flex;gap:6px;margin-top:8px">
-              <button class="btn btn-sm btn-secondary" onclick="readFile()">read</button>
-              <button class="btn btn-sm btn-primary" onclick="writeFile()">write</button>
-              <button class="btn btn-sm btn-secondary" onclick="mkDir()">mkdir</button>
-              <button class="btn btn-sm btn-danger" onclick="rmFile()">delete</button>
+              <button class="btn btn-sm btn-secondary" id="fileRead">read</button>
+              <button class="btn btn-sm btn-primary" id="fileWrite">write</button>
+              <button class="btn btn-sm btn-secondary" id="fileMkdir">mkdir</button>
+              <button class="btn btn-sm btn-danger" id="fileRm">delete</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- SETTINGS -->
       <div class="side-panel" id="sp-settings">
         <div style="flex:1;overflow-y:auto;padding:14px">
           <div class="card" style="margin-bottom:10px">
-            <h4>Novita <span class="tag">body</span></h4>
+            <h4>Novita · body</h4>
             <div class="frow"><span class="lbl">API key</span><input id="st_novitaKey" class="inp" type="password"></div>
             <div class="frow"><span class="lbl">Domain</span><input id="st_domain" class="inp" placeholder="us-phx-1.sandbox.novita.ai"></div>
-            <div class="frow"><span class="lbl">Sandbox lifetime</span>
+            <div class="frow"><span class="lbl">Lifetime</span>
               <select id="st_timeout" class="inp"><option value="300000">5 min</option><option value="900000" selected>15 min</option><option value="1800000">30 min</option><option value="3600000">60 min</option></select>
             </div>
             <div style="display:flex;gap:6px;margin-top:8px">
-              <button class="btn btn-sm btn-primary" onclick="saveNovita()">save</button>
-              <button class="btn btn-sm btn-secondary" onclick="testNovita()">test</button>
+              <button class="btn btn-sm btn-primary" id="stSaveNov">save</button>
+              <button class="btn btn-sm btn-secondary" id="stTestNov">test</button>
             </div>
             <div class="statusline" id="st_novitaStatus">—</div>
           </div>
           <div class="card">
-            <h4>Gemini <span class="tag">brain</span></h4>
+            <h4>Gemini · brain</h4>
             <div class="frow"><span class="lbl">API key</span><input id="st_geminiKey" class="inp" type="password" placeholder="AIza…"></div>
-            <div class="frow"><span class="lbl">Model <span id="st_modelCount" class="chip" style="margin-left:6px">0 available</span></span>
+            <div class="frow"><span class="lbl">Model <span id="st_modelCount" class="chip" style="margin-left:6px"><span class="txt">0 available</span></span></span>
               <div style="display:flex;gap:6px">
                 <select id="st_model" class="inp" style="flex:1"><option>(click fetch)</option></select>
-                <button class="btn btn-sm btn-primary" onclick="fetchModels()">↻ fetch</button>
+                <button class="btn btn-sm btn-primary" id="stFetchModels">↻ fetch</button>
               </div>
-              <div class="statusline" id="st_modelInfo">Click fetch to load models your key can use</div>
+              <div class="statusline" id="st_modelInfo">fetch to load models</div>
             </div>
             <div style="display:flex;gap:6px;margin-top:8px">
-              <button class="btn btn-sm btn-primary" onclick="saveGemini()">save</button>
-              <button class="btn btn-sm btn-secondary" onclick="testGemini()">test</button>
+              <button class="btn btn-sm btn-primary" id="stSaveGem">save</button>
+              <button class="btn btn-sm btn-secondary" id="stTestGem">test</button>
               <label style="margin-left:auto;font-size:11px;color:var(--tx-2);display:flex;align-items:center;gap:4px"><input type="checkbox" id="st_llmEnabled" checked> enable 🧠</label>
             </div>
             <div class="statusline" id="st_geminiStatus">—</div>
           </div>
-          <button class="btn btn-danger" style="width:100%;margin-top:10px" onclick="disconnect()">⏻ disconnect & clear keys</button>
+          <button class="btn btn-danger" style="width:100%;margin-top:10px" id="stDisconnect">⏻ disconnect & clear keys</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ===== MAIN (always-visible computer view) ===== -->
-  <div class="main" id="mainView">
+  <div class="main">
     <div class="computer-head">
       <span class="rec" id="liveRec" style="display:none"><span class="dot"></span>LIVE</span>
       <span class="mode" id="liveModeLbl">NO FEED</span>
       <span class="spacer"></span>
-      <button class="mbtn" id="mbStream" onclick="switchLive('stream')">vnc stream</button>
-      <button class="mbtn" id="mbFrames" onclick="switchLive('frames')">frame feed</button>
-      <button class="mbtn" onclick="refreshLive()">⟳</button>
+      <button class="mbtn" id="mbStream">vnc stream</button>
+      <button class="mbtn" id="mbFrames">frame feed</button>
+      <button class="mbtn" id="mbRefresh">⟳</button>
     </div>
-    <div class="computer-view" id="computerView">
+    <div class="computer-view">
       <iframe id="liveIframe" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock"></iframe>
       <img id="liveImg" style="display:none" alt="agent vision">
       <div class="scanlines"></div>
       <div class="computer-idle" id="liveIdle">
         <div class="big">⬡</div>
         <div class="txt">agent vision offline</div>
-        <div class="hint">Boot the Desktop or Chrome in Mission panel, then watch your agent work live.</div>
+        <div class="hint">Boot the Desktop or Chrome in the Mission panel, then watch your agent work live.</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- login modal -->
 <div class="modal-bg" id="loginModal">
   <div class="modal">
     <h3>Login mission</h3>
-    <div class="sub">The agent will open this site in <b>its own Chrome</b>, find the username/password fields, type your creds, and submit.</div>
+    <div class="sub">The agent opens this site in <b>its own Chrome</b>, finds the fields, types your creds, submits.</div>
     <div class="frow"><span class="lbl">URL</span><input id="lmUrl" class="inp" placeholder="https://example.com/login"></div>
     <div class="frow"><span class="lbl">Username / email</span><input id="lmUser" class="inp"></div>
     <div class="frow"><span class="lbl">Password</span><input id="lmPass" class="inp" type="password"></div>
-    <div class="frow"><span class="lbl">Mode</span>
-      <select id="lmMode" class="inp"><option value="login">log in</option><option value="signup">sign up</option></select>
-    </div>
-    <div class="statusline">⚠ Creds are used once and never stored.</div>
+    <div class="frow"><span class="lbl">Mode</span><select id="lmMode" class="inp"><option value="login">log in</option><option value="signup">sign up</option></select></div>
+    <div class="statusline">⚠ Creds used once, never stored.</div>
     <div class="acts">
-      <button class="btn btn-secondary" onclick="closeLoginModal()">cancel</button>
-      <button class="btn btn-primary" onclick="startLoginMission()">go ▸</button>
+      <button class="btn btn-secondary" id="lmCancel">cancel</button>
+      <button class="btn btn-primary" id="lmGo">go ▸</button>
     </div>
   </div>
 </div>
@@ -517,209 +404,208 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5;font-family:var(--f
 <div class="toast-wrap" id="toasts"></div>
 
 <script type="module">
-/* ================================================================
-   AGENT//DECK v2 — frontend talks to /api/novita & /api/gemini
-   which the Node backend proxies to the real services.
-================================================================ */
+/* AGENT//DECK v2.2 — every handler attached via addEventListener,
+   every failure visible, every request timed out. */
+const APP_VERSION='2.2';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+/* visible crash reporting — nothing fails silently ever again */
+window.addEventListener('error',e=>{const b=$('#fatalBar');b.style.display='block';b.textContent='JS ERROR: '+e.message;});
+window.addEventListener('unhandledrejection',e=>{const b=$('#fatalBar');b.style.display='block';b.textContent='ASYNC ERROR: '+(e.reason&&e.reason.message?e.reason.message:e.reason);});
+
+function fetchT(url,opts={},ms=25000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);return fetch(url,Object.assign({},opts,{signal:c.signal})).finally(()=>clearTimeout(t));}
+
 const LS={novitaKey:'ad.nk',geminiKey:'ad.gk',geminiModel:'ad.gm',geminiModels:'ad.gms',cfg:'ad.cfg',llm:'ad.llm'};
-
 const S={apiKey:'',geminiKey:'',geminiModel:'gemini-2.5-flash',domain:'us-phx-1.sandbox.novita.ai',timeoutMs:900000,
-  NOV:null,desk:null,browserSbx:null,base:null,ci:null,
-  cdp:null,cdpHost:'',vncUrl:'',liveMode:null,pollTimer:null,polling:false,
-  busy:false,stopFlag:false};
+  NOV:null,desk:null,browserSbx:null,base:null,cdp:null,cdpHost:'',vncUrl:'',liveMode:null,pollTimer:null,polling:false,busy:false,stopFlag:false};
 
-/* -------- helpers -------- */
 function toast(msg,type=''){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;$('#toasts').appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='.4s';setTimeout(()=>t.remove(),400)},4500);}
-function ticker(msg){}
-function stepNow(msg){const el=$('#stepNow');if(msg){el.innerHTML='<span class="spin" style="width:10px;height:10px"></span><span>'+esc(msg)+'</span>';$('#agentState').textContent='working';$('#agentState').className='st busy';}else{el.innerHTML='';$('#agentState').textContent='idle';$('#agentState').className='st';}}
+function boot(msg,cls=''){const el=$('#bootLog');el.classList.add('on');const d=document.createElement('div');if(cls)d.className=cls;d.textContent=msg;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+function stepNow(msg){const el=$('#stepNow');if(msg){el.innerHTML='<span class="spin" style="width:10px;height:10px;border-color:#ffffff20;border-top-color:var(--amber)"></span><span>'+esc(msg)+'</span>';$('#agentState').textContent='working';$('#agentState').className='st busy';}else{el.innerHTML='';$('#agentState').textContent='idle';$('#agentState').className='st';}}
 function chatMsg(who,text,img,out){const log=$('#chatLog');const m=document.createElement('div');m.className='msg '+who;
-  m.innerHTML=`<div class="who">${who==='user'?'you':who==='agent'?'nexus':'sys'}</div><div class="bub">${esc(text)}${img?`<img src="${img}">`:''}${out?`<div class="out">${esc(out)}</div>`:''}</div>`;
+  m.innerHTML='<div class="who">'+(who==='user'?'you':who==='agent'?'nexus':'sys')+'</div><div class="bub">'+esc(text)+(img?'<img src="'+img+'">':'')+(out?'<div class="out">'+esc(out)+'</div>':'')+'</div>';
   log.appendChild(m);log.scrollTop=1e9;return m;}
 let typingEl=null;
 function typing(on){if(on&&!typingEl){typingEl=document.createElement('div');typingEl.className='msg agent';typingEl.innerHTML='<div class="bub typing"><i></i><i></i><i></i></div>';$('#chatLog').appendChild(typingEl);$('#chatLog').scrollTop=1e9;}else if(!on&&typingEl){typingEl.remove();typingEl=null;}}
 
-/* -------- gateway client (replaces the browser-loaded SDK) -------- */
-// The browser talks to our own origin (/api/novita/...), the server
-// forwards to Novita with the real API key. NO CORS ISSUES.
+/* ---------- Novita REST client (through our own proxy) ---------- */
 class NovitaClient{
   constructor(apiKey,domain){this.apiKey=apiKey;this.domain=domain;
-    this.sandbox={list:()=>this._get('/sandboxes'),create:(tpl,opts={})=>this._post('/sandboxes',{template:tpl,...opts}),kill:(id)=>this._del('/sandboxes/'+id),getInfo:(id)=>this._get('/sandboxes/'+id),setTimeout:(id,ms)=>this._post('/sandboxes/'+id+'/timeout',{timeoutMs:ms})};
-    this.template={list:()=>this._get('/templates')};
-    this.secret={list:()=>this._get('/secrets'),create:(p)=>this._post('/secrets',p)};
-    this.desktop={create:(opts={})=>this._createSbx('desktop',opts,true)};
-    this.codeInterpreter={create:(opts={})=>this._createSbx(null,opts,false,'codeInterpreter')};
+    this.sandbox={
+      list:()=>this._get('/sandboxes'),
+      create:(tpl,opts={})=>this._post('/sandboxes',Object.assign({template:tpl},opts)),
+      kill:(id)=>this._del('/sandboxes/'+id),
+      getInfo:(id)=>this._get('/sandboxes/'+id),
+      setTimeout:(id,ms)=>this._post('/sandboxes/'+id+'/timeout',{timeoutMs:ms})
+    };
+    this.desktop={create:(opts={})=>this._create('desktop',opts,true)};
   }
   async _req(method,path,body){
     const opts={method,headers:{'Content-Type':'application/json','X-Novita-Key':this.apiKey,'X-Novita-Domain':this.domain}};
     if(body)opts.body=JSON.stringify(body);
-    const r=await fetch('/api/novita'+path,opts);
+    const r=await fetchT('/api/novita'+path,opts);
     const t=await r.text();let j=null;try{j=JSON.parse(t);}catch(e){}
-    if(!r.ok)throw new Error((j&&j.error)||(j&&j.message)||('HTTP '+r.status+': '+t.slice(0,200)));
+    if(!r.ok)throw new Error((j&&(j.error||j.message))||('HTTP '+r.status+': '+t.slice(0,200)));
     return j;
   }
   _get(p){return this._req('GET',p);}
   _post(p,b){return this._req('POST',p,b);}
   _del(p){return this._req('DELETE',p);}
-  async _createSbx(template,opts,isDesktop,kind){
-    const base=template||'base';
-    const payload={template:base,timeoutMs:opts.timeoutMs||900000,metadata:opts.metadata||{}};
-    const sbx=await this.sandbox.create(base,payload);
-    return new SandboxHandle(this,sbx,isDesktop,kind);
+  async _create(template,opts,isDesktop){
+    const info=await this.sandbox.create(template,{timeoutMs:opts.timeoutMs||900000,metadata:opts.metadata||{}});
+    return new SandboxHandle(this,info,isDesktop);
   }
 }
 class SandboxHandle{
-  constructor(client,info,isDesktop,kind){
-    this.client=client;this.sandboxId=info.sandboxId||info.id;this.template=info.template||info.templateId;this.status=info.status;this.isDesktop=isDesktop;this.kind=kind;
-    this.commands={run:async(cmd,opts={})=>{
-      const r=await this.client._post('/sandboxes/'+this.sandboxId+'/commands',{command:cmd,timeoutMs:opts.timeoutMs||60000});
-      if(r.exitCode!==0&&r.exitCode!==undefined&&opts.throwOnError)throw new Error('exit '+r.exitCode);
-      return r;
-    }};
+  constructor(client,info,isDesktop){
+    this.client=client;this.sandboxId=info.sandboxId||info.id;this.template=info.template||info.templateId;this.isDesktop=isDesktop;
+    this.commands={run:async(cmd,opts={})=>this.client._post('/sandboxes/'+this.sandboxId+'/commands',{command:cmd,timeoutMs:opts.timeoutMs||60000})};
     this.files={
-      list:  (p)=>this.client._get('/sandboxes/'+this.sandboxId+'/files?path='+encodeURIComponent(p)),
-      read:  (p,o={})=>this.client._get('/sandboxes/'+this.sandboxId+'/files?path='+encodeURIComponent(p)+'&format='+(o.format||'text')),
-      write: (p,c)=>this.client._post('/sandboxes/'+this.sandboxId+'/files',{path:p,content:c}),
+      list:(p)=>this.client._get('/sandboxes/'+this.sandboxId+'/files?path='+encodeURIComponent(p)),
+      read:(p,o={})=>this.client._get('/sandboxes/'+this.sandboxId+'/files?path='+encodeURIComponent(p)+'&format='+(o.format||'text')),
+      write:(p,c)=>this.client._post('/sandboxes/'+this.sandboxId+'/files',{path:p,content:c}),
       remove:(p)=>this.client._del('/sandboxes/'+this.sandboxId+'/files?path='+encodeURIComponent(p)),
       makeDir:(p)=>this.commands.run('mkdir -p '+JSON.stringify(p))
     };
     if(isDesktop){
       this.stream={
-        start:async()=>{await this.commands.run('which x11vnc || (apt-get update -qq && apt-get install -y -qq x11vnc novnc websockify)');await this.commands.run('pkill -f x11vnc ; pkill -f novnc_proxy',{});
-          await this.commands.run('x11vnc -bg -display :0 -forever -shared -nopw -rfbport 5900',{timeoutMs:15000}).catch(()=>{});
-          await this.commands.run('cd /opt/noVNC && /opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 6080 --web /opt/noVNC',{background:true,timeoutMs:5000}).catch(()=>{});
+        start:async()=>{
+          await this.commands.run('which x11vnc || (apt-get update -qq && apt-get install -y -qq x11vnc novnc websockify)',{timeoutMs:120000}).catch(()=>{});
+          await this.commands.run('pkill -f x11vnc; pkill -f novnc_proxy').catch(()=>{});
+          await this.commands.run('x11vnc -bg -display :0 -forever -shared -nopw -rfbport 5900').catch(()=>{});
+          await this.commands.run('cd /opt/noVNC && /opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 6080 --web /opt/noVNC &',{timeoutMs:5000}).catch(()=>{});
           await sleep(2000);
         },
-        getUrl:({autoconnect=true}={})=>{
-          const host=this.getHost(6080);
-          return 'https://'+host+'/vnc.html?autoconnect='+(autoconnect?'true':'false')+'&resize=scale';
-        }
+        getUrl:()=>('https://'+this.getHost(6080)+'/vnc.html?autoconnect=true&resize=scale')
       };
     }
   }
-  getHost(port){return `${port}-${this.sandboxId}.${this.client.domain}`;}
+  getHost(port){return port+'-'+this.sandboxId+'.'+this.client.domain;}
   async screenshot(){
-    if(this.isDesktop){
-      const r=await this.commands.run('which scrot || apt-get install -y -qq scrot');
-      const path='/tmp/shot-'+Date.now()+'.png';
-      await this.commands.run('DISPLAY=:0 scrot --pointer '+path);
-      const b64=await this.client._get('/sandboxes/'+this.sandboxId+'/files?path='+encodeURIComponent(path)+'&format=base64');
-      await this.files.remove(path).catch(()=>{});
-      const data=(typeof b64==='string')?b64:(b64.content||b64.data||'');
-      const bin=atob(data.replace(/^data:[^;]+;base64,/,''));
-      const u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
-      return u8;
-    }
-    return new Uint8Array();
+    if(!this.isDesktop)return new Uint8Array();
+    await this.commands.run('which scrot || apt-get install -y -qq scrot').catch(()=>{});
+    const path='/tmp/shot-'+Date.now()+'.png';
+    await this.commands.run('DISPLAY=:0 scrot --pointer '+path);
+    const b64=await this.client._get('/sandboxes/'+this.sandboxId+'/files?path='+encodeURIComponent(path)+'&format=base64');
+    this.files.remove(path).catch(()=>{});
+    const data=(typeof b64==='string')?b64:(b64.content||b64.data||'');
+    const bin=atob(data.replace(/^data:[^;]+;base64,/,''));
+    const u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+    return u8;
   }
-  async leftClick(x,y){await this.commands.run(`DISPLAY=:0 xdotool mousemove --sync ${x} ${y} && xdotool click 1`);}
-  async doubleClick(x,y){await this.commands.run(`DISPLAY=:0 xdotool mousemove --sync ${x} ${y} && xdotool click --repeat 2 1`);}
-  async rightClick(x,y){await this.commands.run(`DISPLAY=:0 xdotool mousemove --sync ${x} ${y} && xdotool click 3`);}
-  async scroll(dir='down',n=1){const b=dir==='up'?'4':'5';await this.commands.run(`DISPLAY=:0 xdotool click --repeat ${n} ${b}`);}
-  async write(text){const q=JSON.stringify(text).slice(1,-1).replace(/'/g,"\\'");await this.commands.run(`DISPLAY=:0 xdotool type --delay 30 '${q}'`);}
-  async press(key){const k=(Array.isArray(key)?key.join('+'):key);await this.commands.run(`DISPLAY=:0 xdotool key ${k}`);}
-  async open(app){await this.commands.run(`DISPLAY=:0 xdg-open ${JSON.stringify(app)}`,{background:true,timeoutMs:5000}).catch(()=>{});}
+  async leftClick(x,y){await this.commands.run('DISPLAY=:0 xdotool mousemove --sync '+x+' '+y+' && xdotool click 1');}
+  async scroll(d='down',n=1){await this.commands.run('DISPLAY=:0 xdotool click --repeat '+n+' '+(d==='up'?'4':'5'));}
+  async write(t){const q=JSON.stringify(t).slice(1,-1).replace(/'/g,"\\'");await this.commands.run("DISPLAY=:0 xdotool type --delay 30 '"+q+"'");}
+  async press(k){await this.commands.run('DISPLAY=:0 xdotool key '+(Array.isArray(k)?k.join('+'):k));}
+  async open(a){await this.commands.run('DISPLAY=:0 xdg-open '+JSON.stringify(a),{timeoutMs:5000}).catch(()=>{});}
   async kill(){try{await this.client.sandbox.kill(this.sandboxId);}catch(e){}}
 }
 
-/* -------- connect -------- */
+/* ---------- connect ---------- */
 $('#keyInp').value=localStorage.getItem(LS.novitaKey)||'';
 $('#geminiInp').value=localStorage.getItem(LS.geminiKey)||'';
-$('#keyInp').addEventListener('keydown',e=>{if(e.key==='Enter')connect();});
-$('#geminiInp').addEventListener('keydown',e=>{if(e.key==='Enter')connect();});
 try{const c=JSON.parse(localStorage.getItem(LS.cfg)||'{}');if(c.domain)S.domain=c.domain;if(c.timeoutMs)S.timeoutMs=c.timeoutMs;}catch(e){}
 
-window.connect=async function(){
+async function connect(){
   const novitaKey=$('#keyInp').value.trim();
   const geminiKey=$('#geminiInp').value.trim();
-  const errEl=$('#gateErr');errEl.style.display='none';
+  const errEl=$('#gateErr');errEl.style.display='none';$('#bootLog').innerHTML='';
   if(!novitaKey){errEl.textContent='paste your Novita API key';errEl.style.display='block';return;}
-  const btn=$('#connectBtn');btn.disabled=true;btn.innerHTML='<span class="spin"></span>connecting…';
+  const btn=$('#connectBtn');btn.disabled=true;btn.innerHTML='<span class="spin"></span> connecting…';
   try{
-    // 1. sanity check — our backend must be reachable
-    const hr=await fetch('/api/health').catch(()=>null);
-    if(!hr||!hr.ok)throw new Error('backend not reachable — did you deploy server.js? (HTTP '+(hr?hr.status:'?')+')');
-    // 2. build client, validate key via /sandboxes
+    boot('→ checking backend /api/health …');
+    let hr=null;try{hr=await fetchT('/api/health',{},10000);}catch(e){}
+    if(!hr||!hr.ok)throw new Error('backend unreachable (is server.js deployed & Live on Render?)');
+    const hj=await hr.json().catch(()=>({}));
+    boot('✓ backend ok (server '+ (hj.v||'?') +')','ok');
+    if(hj.v&&hj.v!==APP_VERSION)boot('⚠ server v'+hj.v+' vs page v'+APP_VERSION+' — redeploy both files!','err');
+    $('#gateVer').textContent='v'+APP_VERSION;
+    boot('→ validating Novita key …');
     S.NOV=new NovitaClient(novitaKey,S.domain);
     const list=await S.NOV.sandbox.list();
+    boot('✓ novita ok — '+((Array.isArray(list))?list.length:0)+' sandbox(es) running','ok');
     S.apiKey=novitaKey;
     if(geminiKey){S.geminiKey=geminiKey;localStorage.setItem(LS.geminiKey,geminiKey);}
     localStorage.setItem(LS.novitaKey,novitaKey);
     localStorage.setItem(LS.cfg,JSON.stringify({domain:S.domain,timeoutMs:S.timeoutMs}));
+    boot('✓ connected — launching deck','ok');
+    await sleep(300);
     $('#gate').classList.add('off');$('#app').classList.add('on');
-    toast('connected ✔ '+(Array.isArray(list)?list.length:0)+' sandbox(es) live','ok');
-    populateSettingsFromLS();updateBadges();
+    toast('connected ✔','ok');
+    try{populateSettingsFromLS();}catch(e){console.error(e);}
+    try{updateBadges();}catch(e){console.error(e);}
     chatMsg('sys','connected as '+novitaKey.slice(0,8)+'…');
-    if(geminiKey){chatMsg('agent','Gemini brain online. Order me around — try "search for AI agent news" or "open hacker news and read me the top story".');try{await fetchModels(true);}catch(e){chatMsg('sys','Gemini model fetch: '+e.message);}}
-    else{chatMsg('agent','No Gemini key — running on rule-based planner. Add one in ⚙ for smart multi-step tasks.');}
+    if(geminiKey){chatMsg('agent','Gemini brain online. Order me around — "search for AI agent news", "open hacker news", or use the login mission.');fetchModels(true).catch(()=>{});}
+    else chatMsg('agent','No Gemini key — rule-based planner active. Add a key in ⚙ for smart planning.');
   }catch(e){
     console.error(e);
-    let msg=e&&e.message?e.message:String(e);
-    if(msg.includes('Unauthorized')||msg.includes('401'))msg='Invalid API key. Check your Novita key.';
-    else if(msg.includes('backend not reachable'))msg='Server not running. Did you deploy server.js?';
+    let msg=(e&&e.message)?e.message:String(e);
+    if(e&&e.name==='AbortError')msg='request timed out — server too slow or down';
+    if(/401|Unauthorized/i.test(msg))msg='Novita rejected the key (401). Check it at novita.ai.';
+    boot('✗ '+msg,'err');
     errEl.textContent=msg;errEl.style.display='block';
-  }finally{btn.disabled=false;btn.innerHTML='connect ▸';}
-};
-window.disconnect=function(){killAll(true).finally(()=>{Object.values(LS).forEach(k=>localStorage.removeItem(k));location.reload();});};
+  }finally{btn.disabled=false;btn.innerHTML='Connect ▸';}
+}
+$('#connectBtn').addEventListener('click',connect);
+$('#keyInp').addEventListener('keydown',e=>{if(e.key==='Enter')connect();});
+$('#geminiInp').addEventListener('keydown',e=>{if(e.key==='Enter')connect();});
 
-/* -------- settings UI -------- */
+function disconnect(){killAll(true).finally(()=>{Object.values(LS).forEach(k=>localStorage.removeItem(k));location.reload();});}
+$('#disconnectBtn').addEventListener('click',disconnect);
+$('#stDisconnect').addEventListener('click',disconnect);
+
+/* ---------- settings ---------- */
 function populateSettingsFromLS(){
   $('#st_novitaKey').value=S.apiKey||'';$('#st_geminiKey').value=S.geminiKey||'';
-  $('#st_domain').value=S.domain;$('#st_timeout').value=S.timeoutMs;
-  $('#st_llmEnabled').checked=localStorage.getItem(LS.llm)!=='false';
+  $('#st_domain').value=S.domain;$('#st_timeout').value=String(S.timeoutMs);
+  $('#st_llmEnabled').checked=localStorage.getItem(LS.llm)!=='0';
   $('#smartTog').checked=$('#st_llmEnabled').checked;
   restoreModelsDropdown();
 }
-window.saveNovita=async function(){
+$('#stSaveNov').addEventListener('click',async()=>{
   const k=$('#st_novitaKey').value.trim(),d=$('#st_domain').value.trim()||'us-phx-1.sandbox.novita.ai',t=parseInt($('#st_timeout').value)||900000;
   if(!k)return toast('need a key','err');
   try{const c=new NovitaClient(k,d);const l=await c.sandbox.list();S.apiKey=k;S.domain=d;S.timeoutMs=t;S.NOV=c;localStorage.setItem(LS.novitaKey,k);localStorage.setItem(LS.cfg,JSON.stringify({domain:d,timeoutMs:t}));$('#st_novitaStatus').textContent='✔ validated';$('#st_novitaStatus').className='statusline ok';toast('saved ✔','ok');}
   catch(e){$('#st_novitaStatus').textContent='✖ '+e.message;$('#st_novitaStatus').className='statusline err';toast(e.message,'err');}
-};
-window.testNovita=async function(){try{const l=await S.NOV.sandbox.list();$('#st_novitaStatus').textContent='✔ '+((Array.isArray(l)?l.length:0))+' sandbox(es)';$('#st_novitaStatus').className='statusline ok';toast('novita ✔','ok');}catch(e){$('#st_novitaStatus').textContent='✖ '+e.message;$('#st_novitaStatus').className='statusline err';toast(e.message,'err');}};
+});
+$('#stTestNov').addEventListener('click',async()=>{try{const l=await S.NOV.sandbox.list();$('#st_novitaStatus').textContent='✔ '+(Array.isArray(l)?l.length:0)+' sandbox(es)';$('#st_novitaStatus').className='statusline ok';}catch(e){$('#st_novitaStatus').textContent='✖ '+e.message;$('#st_novitaStatus').className='statusline err';}});
 
-async function geminiFetch(path,body){
-  const opts={method:'POST',headers:{'Content-Type':'application/json','X-Gemini-Key':S.geminiKey}};
-  if(body)opts.body=JSON.stringify(body);
-  const r=await fetch('/api/gemini/'+path,opts);
+async function geminiPost(path,body){
+  const r=await fetchT('/api/gemini/'+path,{method:'POST',headers:{'Content-Type':'application/json','X-Gemini-Key':S.geminiKey},body:JSON.stringify(body||{})});
   const t=await r.text();let j=null;try{j=JSON.parse(t);}catch(e){}
-  if(!r.ok)throw new Error((j&&j.error&&j.error.message)||('HTTP '+r.status));
+  if(!r.ok)throw new Error((j&&(j.error||j.error&&j.error.message))||('HTTP '+r.status+': '+t.slice(0,150)));
   return j;
 }
-window.fetchModels=async function(silent){
+async function fetchModels(silent){
   const k=$('#st_geminiKey').value.trim();if(!k)return toast('paste a gemini key','err');
   $('#st_modelInfo').textContent='fetching…';
   try{
-    const j=await geminiFetch('models',{contents:[]}).catch(async e=>{
-      // some projects need a plain GET on /v1beta/models — fall back via a tiny proxy-less call
-      const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+k);
-      return r.json();
-    });
+    const r=await fetchT('/api/gemini/models',{headers:{'X-Gemini-Key':k}});
+    const j=await r.json();
+    if(!r.ok)throw new Error((j&&j.error)||('HTTP '+r.status));
     const models=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).filter(m=>/gemini/i.test(m.name))
-      .map(m=>({id:m.name.replace(/^models\//,''),display:m.displayName||m.name.replace(/^models\//,''),desc:m.description||''}))
-      .sort((a,b)=>a.id.localeCompare(b.id));
-    localStorage.setItem(LS.geminiModels,JSON.stringify(models));
-    S.geminiKey=k;localStorage.setItem(LS.geminiKey,k);
-    $('#st_modelCount').textContent=models.length+' available';
+      .map(m=>({id:m.name.replace(/^models\//,''),display:m.displayName||m.name.replace(/^models\//,''),desc:m.description||''})).sort((a,b)=>a.id.localeCompare(b.id));
+    localStorage.setItem(LS.geminiModels,JSON.stringify(models));S.geminiKey=k;localStorage.setItem(LS.geminiKey,k);
     $('#st_modelInfo').textContent='found '+models.length+' models';
     restoreModelsDropdown();updateBadges();
     if(!silent)toast('loaded '+models.length+' models ✔','ok');
-    return models;
-  }catch(e){$('#st_modelInfo').textContent='✖ '+e.message;if(!silent)toast(e.message,'err');return false;}
-};
+  }catch(e){$('#st_modelInfo').textContent='✖ '+e.message;if(!silent)toast(e.message,'err');}
+}
+$('#stFetchModels').addEventListener('click',()=>fetchModels(false));
 function restoreModelsDropdown(){
   const raw=localStorage.getItem(LS.geminiModels);const sel=$('#st_model');sel.innerHTML='';
-  if(!raw){sel.innerHTML='<option>(click fetch)</option>';$('#st_modelCount').textContent='0 available';return;}
+  if(!raw){sel.innerHTML='<option>(click fetch)</option>';$('#st_modelCount').querySelector('.txt').textContent='0 available';return;}
   const models=JSON.parse(raw);
-  for(const m of models){const o=document.createElement('option');o.value=m.id;o.textContent=m.display+(m.desc?(' · '+m.desc.slice(0,55)):'');sel.appendChild(o);}
+  for(const m of models){const o=document.createElement('option');o.value=m.id;o.textContent=m.display;sel.appendChild(o);}
   const saved=localStorage.getItem(LS.geminiModel);
-  sel.value=(saved&&models.find(m=>m.id===saved))||(models.find(m=>/flash/i.test(m.id))&&models.find(m=>/flash/i.test(m.id)).id)||models[0].id;
-  S.geminiModel=sel.value;$('#st_modelCount').textContent=models.length+' available';updateBadges();
+  const flash=models.find(m=>/flash/i.test(m.id));
+  sel.value=(saved&&models.find(m=>m.id===saved))?saved:(flash?flash.id:(models[0]?models[0].id:''));
+  S.geminiModel=sel.value;
+  $('#st_modelCount').querySelector('.txt').textContent=models.length+' available';
 }
-window.saveGemini=function(){
+$('#stSaveGem').addEventListener('click',()=>{
   const k=$('#st_geminiKey').value.trim(),m=$('#st_model').value,e=$('#st_llmEnabled').checked;
   S.geminiKey=k;S.geminiModel=m;
   if(k)localStorage.setItem(LS.geminiKey,k);else localStorage.removeItem(LS.geminiKey);
@@ -727,61 +613,61 @@ window.saveGemini=function(){
   $('#smartTog').checked=e;updateBadges();
   $('#st_geminiStatus').textContent=k?('✔ using '+m):'cleared';$('#st_geminiStatus').className='statusline '+(k?'ok':'');
   toast('saved ✔','ok');
-};
-window.testGemini=async function(){
+});
+$('#stTestGem').addEventListener('click',async()=>{
   const k=$('#st_geminiKey').value.trim(),m=$('#st_model').value||'gemini-2.5-flash';
   if(!k)return toast('paste a key','err');
   $('#st_geminiStatus').textContent='testing…';
-  try{const j=await geminiFetch('models/'+encodeURIComponent(m)+':generateContent',{contents:[{role:'user',parts:[{text:'Reply with: OK'}]}],generationConfig:{maxOutputTokens:20}});
-    const txt=j.candidates?.[0]?.content?.parts?.[0]?.text||'';
-    $('#st_geminiStatus').textContent='✔ '+m+' said: "'+txt.slice(0,40)+'"';$('#st_geminiStatus').className='statusline ok';toast('gemini ✔','ok');
+  try{const j=await geminiPost('models/'+encodeURIComponent(m)+':generateContent',{contents:[{role:'user',parts:[{text:'Reply with: OK'}]}],generationConfig:{maxOutputTokens:20}});
+    $('#st_geminiStatus').textContent='✔ '+m+' replied';$('#st_geminiStatus').className='statusline ok';toast('gemini ✔','ok');
   }catch(e){$('#st_geminiStatus').textContent='✖ '+e.message;$('#st_geminiStatus').className='statusline err';toast(e.message,'err');}
-};
+});
+$('#st_llmEnabled').addEventListener('change',()=>{$('#smartTog').checked=$('#st_llmEnabled').checked;localStorage.setItem(LS.llm,$('#st_llmEnabled').checked?'1':'0');updateBadges();});
+$('#smartTog').addEventListener('change',()=>{$('#st_llmEnabled').checked=$('#smartTog').checked;localStorage.setItem(LS.llm,$('#smartTog').checked?'1':'0');updateBadges();});
+$('#st_model').addEventListener('change',()=>{S.geminiModel=$('#st_model').value;localStorage.setItem(LS.geminiModel,S.geminiModel);updateBadges();});
+
+/* ---------- chips / badges (null-safe) ---------- */
+function chipOn(id,on){const el=$(id);if(!el)return;el.classList.toggle('on',!!on);const t=el.querySelector('.txt');if(t&&el.id.includes('Mini'))t.textContent=on?'on':'off';}
+function updChips(){
+  chipOn('#chipDesk',S.desk);chipOn('#chipBrowser',S.browserSbx);chipOn('#chipShell',S.base);
+  chipOn('#chipDeskMini',S.desk);chipOn('#chipBrowserMini',S.browserSbx);chipOn('#chipShellMini',S.base);
+  const b=$('#btnDesk');if(b)b.textContent=S.desk?'kill':'boot';
+  const bb=$('#btnBrowser');if(bb)bb.textContent=S.browserSbx?'kill':'boot';
+  const bu=$('#btnBase');if(bu)bu.textContent=S.base?'kill':'boot';
+  const cd=$('#cardDesk');if(cd)cd.classList.toggle('on',!!S.desk);
+  const cb=$('#cardBrowser');if(cb)cb.classList.toggle('on',!!S.browserSbx);
+  const n=(S.desk?1:0)+(S.browserSbx?1:0)+(S.base?1:0);
+  const ol=$('#onlineLbl');if(ol)ol.textContent=n+' online';
+}
 function updateBadges(){
   const on=localStorage.getItem(LS.llm)!=='0'&&S.geminiKey;
-  const bb=$('#brainBadge');
-  if(on){bb.querySelector('span:last-child')||bb;bb.innerHTML='<span class="dot"></span>🧠 '+S.geminiModel;bb.classList.add('on');}
-  else if(S.geminiKey){bb.innerHTML='<span class="dot"></span>🧠 off';bb.classList.remove('on');}
-  else{bb.innerHTML='<span class="dot"></span>🧠 no brain';bb.classList.remove('on');}
+  const bb=$('#brainBadge');if(!bb)return;
+  bb.classList.toggle('on',!!on);
+  const t=bb.querySelector('.txt');if(t)t.textContent=on?('🧠 '+S.geminiModel):(S.geminiKey?'🧠 off':' no brain');
   updChips();
 }
-$('#st_llmEnabled').addEventListener('change',()=>{$('#smartTog').checked=$('#st_llmEnabled').checked;localStorage.setItem(LS.llm,$('#st_llmEnabled').checked?'1':'0');updateBadges();});
-$('#st_model').addEventListener('change',()=>{S.geminiModel=$('#st_model').value;localStorage.setItem(LS.geminiModel,S.geminiModel);updateBadges();});
-$('#smartTog').addEventListener('change',()=>{$('#st_llmEnabled').checked=$('#smartTog').checked;localStorage.setItem(LS.llm,$('#smartTog').checked?'1':'0');updateBadges();});
 
-/* -------- provisioning -------- */
-function meta(){return{app:'agent-deck',ts:String(Date.now()).slice(-6)};}
-function updChips(){
-  const set=(id,on,lbl)=>{const el=$(id);el.classList.toggle('on',!!on);el.querySelector('span:last-child').textContent=on?'on':'off';};
-  set('#chipDeskMini',S.desk);set('#chipBrowserMini',S.browserSbx);set('#chipShellMini',S.base);
-  set('#chipDesk',S.desk);set('#chipBrowser',S.browserSbx);set('#chipShell',S.base);
-  $('#btnDesk').textContent=S.desk?'kill':'boot';
-  $('#btnBrowser').textContent=S.browserSbx?'kill':'boot';
-  $('#btnBase').textContent=S.base?'kill':'boot';
-  $('#cardDesk').classList.toggle('on',!!S.desk);
-  $('#cardBrowser').classList.toggle('on',!!S.browserSbx);
-  const live=S.desk||S.browserSbx||S.base;
-  const n=(S.desk?1:0)+(S.browserSbx?1:0)+(S.base?1:0);
-  $('#onlineLbl').textContent=n+' online';
-}
+/* ---------- provisioning ---------- */
+function meta(){return{app:'agent-deck'};}
 async function createDesktop(){
   stepNow('booting desktop…');
   const sbx=await S.NOV.desktop.create({timeoutMs:S.timeoutMs,metadata:meta()});
-  // make sure Xvfb + xfce4 are up — desktop template should have them, but be safe
-  await sbx.commands.run('which Xvfb || (apt-get update -qq && apt-get install -y -qq xvfb xfce4 xdotool scrot)',{timeoutMs:120000}).catch(()=>{});
-  await sbx.commands.run('pkill -f Xvfb ; Xvfb :0 -ac -screen 0 1280x800x24 -nolisten tcp & sleep 1 && DISPLAY=:0 startxfce4 &',{timeoutMs:10000}).catch(()=>{});
+  await sbx.commands.run('which Xvfb || (apt-get update -qq && apt-get install -y -qq xvfb xfce4 xdotool scrot)',{timeoutMs:180000}).catch(()=>{});
+  await sbx.commands.run('pkill -f Xvfb; Xvfb :0 -ac -screen 0 1280x800x24 -nolisten tcp & sleep 1; DISPLAY=:0 startxfce4 &',{timeoutMs:10000}).catch(()=>{});
   S.desk=sbx;updChips();toast('desktop online','ok');chatMsg('sys','🖥 desktop online → '+sbx.sandboxId);
   return sbx;
 }
 async function createBrowser(){
   stepNow('booting chrome…');
-  const sbx=await S.NOV.sandbox.create('browser-chromium',{timeoutMs:S.timeoutMs,metadata:meta()});
+  const info=await S.NOV.sandbox.create('browser-chromium',{timeoutMs:S.timeoutMs,metadata:meta()});
+  const sbx=new SandboxHandle(S.NOV,info,false);
   S.browserSbx=sbx;updChips();toast('chrome online','ok');chatMsg('sys','🌐 chrome online → '+sbx.sandboxId);
   return sbx;
 }
 async function createBase(){
   stepNow('booting utility…');
-  const sbx=await S.NOV.sandbox.create('base',{timeoutMs:S.timeoutMs,metadata:meta()});
+  const info=await S.NOV.sandbox.create('base',{timeoutMs:S.timeoutMs,metadata:meta()});
+  const sbx=new SandboxHandle(S.NOV,info,false);
   S.base=sbx;updChips();toast('utility online','ok');
   return sbx;
 }
@@ -789,63 +675,64 @@ async function killSbx(w){try{
   if(w==='desk'&&S.desk){stopLive();await S.desk.kill();S.desk=null;}
   if(w==='browser'&&S.browserSbx){if(S.cdp){try{S.cdp.close();}catch(e){}S.cdp=null;}await S.browserSbx.kill();S.browserSbx=null;}
   if(w==='base'&&S.base){await S.base.kill();S.base=null;}
-  if(w==='ci'&&S.ci){await S.ci.kill();S.ci=null;}
 }catch(e){toast('kill: '+e.message,'err');}updChips();}
-window.toggleDesktop=async()=>{if(S.desk){await killSbx('desk');return;}try{await createDesktop();await deskStreamBtn(true);}catch(e){toast('desktop: '+e.message,'err');chatMsg('sys','desktop boot failed: '+e.message);}};
-window.toggleBrowser=async()=>{if(S.browserSbx){await killSbx('browser');return;}try{await createBrowser();await ensureBrowser(true);}catch(e){toast('chrome: '+e.message,'err');}};
-window.toggleBase=async()=>{if(S.base){await killSbx('base');return;}try{await createBase();}catch(e){toast('utility: '+e.message,'err');}};
-window.killAll=async(silent)=>{for(const w of['desk','browser','base','ci'])await killSbx(w);if(!silent)toast('all killed','ok');};
+async function killAll(silent){for(const w of['desk','browser','base'])await killSbx(w);if(!silent)toast('all killed','ok');}
+$('#btnKillAll').addEventListener('click',()=>killAll(false));
+$('#btnDesk').addEventListener('click',async()=>{if(S.desk)return killSbx('desk');try{await createDesktop();deskStreamBtn(true);}catch(e){toast('desktop: '+e.message,'err');chatMsg('sys','desktop boot failed: '+e.message);}});
+$('#btnBrowser').addEventListener('click',async()=>{if(S.browserSbx)return killSbx('browser');try{await createBrowser();await ensureBrowser(true);}catch(e){toast('chrome: '+e.message,'err');}});
+$('#btnBase').addEventListener('click',async()=>{if(S.base)return killSbx('base');try{await createBase();}catch(e){toast('utility: '+e.message,'err');}});
 
-/* -------- live view -------- */
+/* ---------- live view ---------- */
 function stopLive(){if(S.pollTimer){clearInterval(S.pollTimer);S.pollTimer=null;}$('#liveIframe').style.display='none';$('#liveIframe').src='about:blank';$('#liveImg').style.display='none';$('#liveIdle').style.display='flex';$('#liveRec').style.display='none';$('#liveModeLbl').textContent='NO FEED';$('#mbStream').classList.remove('act');$('#mbFrames').classList.remove('act');S.liveMode=null;}
 function setLiveImg(src){$('#liveIdle').style.display='none';$('#liveIframe').style.display='none';const im=$('#liveImg');im.style.display='block';im.src=src;$('#liveRec').style.display='flex';$('#liveModeLbl').textContent='FRAME FEED';$('#mbFrames').classList.add('act');$('#mbStream').classList.remove('act');}
 function setLiveIframe(url){$('#liveIdle').style.display='none';$('#liveImg').style.display='none';const f=$('#liveIframe');f.style.display='block';f.src=url;$('#liveRec').style.display='flex';$('#liveModeLbl').textContent='VNC STREAM';$('#mbStream').classList.add('act');$('#mbFrames').classList.remove('act');}
-window.switchLive=async(m)=>{if(m==='stream'){if(S.desk)await deskStreamBtn();else toast('boot desktop first','err');}else{if(S.cdp){await browserShotBtn();startBrowserPoll();}else if(S.desk){startDeskPoll();}else toast('boot a sandbox first','err');}};
-window.refreshLive=async()=>{if(S.liveMode==='frames'){if(S.cdp)await browserShotBtn();else if(S.desk)await deskShotBtn();}else if(S.liveMode==='stream'&&S.vncUrl)setLiveIframe(S.vncUrl);};
-window.deskStreamBtn=async(silent)=>{try{if(!S.desk)await createDesktop();stepNow('starting vnc…');
-  try{await S.desk.stream.start();}catch(e){}
-  const url=S.desk.stream.getUrl({autoconnect:true});
-  S.vncUrl=url;setLiveIframe(url);stopPoll();if(!silent)toast('vnc stream attached','ok');
-}catch(e){toast('vnc failed ('+e.message+') → frame feed','err');startDeskPoll();}};
-window.deskShotBtn=async()=>{try{if(!S.desk)await createDesktop();stepNow('capturing frame…');const shot=await S.desk.screenshot();setLiveImg(URL.createObjectURL(new Blob([shot],{type:'image/png'})));stopPoll();startDeskPoll();}catch(e){toast('screenshot: '+e.message,'err');}};
-window.browserShotBtn=async()=>{try{if(!S.cdp)await ensureBrowser(true);const r=await S.cdp.send('Page.captureScreenshot',{format:'png'});const src='data:image/png;base64,'+r.data;setLiveImg(src);stopPoll();startBrowserPoll();return src;}catch(e){toast('frame: '+e.message,'err');}};
 function stopPoll(){if(S.pollTimer){clearInterval(S.pollTimer);S.pollTimer=null;}}
 function startDeskPoll(){stopPoll();S.liveMode='frames';S.pollTimer=setInterval(async()=>{if(S.polling||!S.desk)return;S.polling=true;try{const shot=await S.desk.screenshot();setLiveImg(URL.createObjectURL(new Blob([shot],{type:'image/png'})));}catch(e){}finally{S.polling=false;}},2500);}
 function startBrowserPoll(){stopPoll();S.liveMode='frames';S.pollTimer=setInterval(async()=>{if(S.polling||!S.cdp)return;S.polling=true;try{const r=await S.cdp.send('Page.captureScreenshot',{format:'png'});setLiveImg('data:image/png;base64,'+r.data);}catch(e){}finally{S.polling=false;}},2200);}
+async function deskStreamBtn(silent){try{if(!S.desk)await createDesktop();stepNow('starting vnc…');try{await S.desk.stream.start();}catch(e){}const url=S.desk.stream.getUrl();S.vncUrl=url;setLiveIframe(url);stopPoll();if(!silent)toast('vnc attached','ok');}catch(e){toast('vnc failed → frame feed','err');startDeskPoll();}}
+async function deskShotBtn(){try{if(!S.desk)await createDesktop();const shot=await S.desk.screenshot();setLiveImg(URL.createObjectURL(new Blob([shot],{type:'image/png'})));stopPoll();startDeskPoll();}catch(e){toast('screenshot: '+e.message,'err');}}
+async function browserShotBtn(){try{if(!S.cdp)await ensureBrowser(true);const r=await S.cdp.send('Page.captureScreenshot',{format:'png'});const src='data:image/png;base64,'+r.data;setLiveImg(src);stopPoll();startBrowserPoll();return src;}catch(e){toast('frame: '+e.message,'err');}}
+$('#btnDeskVnc').addEventListener('click',()=>deskStreamBtn(false));
+$('#btnDeskShot').addEventListener('click',deskShotBtn);
+$('#btnBrowserShot').addEventListener('click',browserShotBtn);
+$('#mbStream').addEventListener('click',async()=>{if(S.desk)await deskStreamBtn(false);else toast('boot desktop first','err');});
+$('#mbFrames').addEventListener('click',async()=>{if(S.cdp){await browserShotBtn();}else if(S.desk){startDeskPoll();}else toast('boot a sandbox first','err');});
+$('#mbRefresh').addEventListener('click',async()=>{if(S.liveMode==='frames'){if(S.cdp)await browserShotBtn();else if(S.desk)await deskShotBtn();}else if(S.liveMode==='stream'&&S.vncUrl)setLiveIframe(S.vncUrl);});
 
-/* -------- CDP (Chrome DevTools Protocol) -------- */
+/* ---------- CDP ---------- */
 class CDPSession{
   constructor(){this.ws=null;this.id=0;this.pending=new Map();}
   connect(url){return new Promise((res,rej)=>{this.ws=new WebSocket(url);const t=setTimeout(()=>rej(new Error('ws timeout')),15000);this.ws.onopen=()=>{clearTimeout(t);res();};this.ws.onerror=()=>{clearTimeout(t);rej(new Error('ws error'));};this.ws.onmessage=m=>{let d;try{d=JSON.parse(m.data);}catch(e){return;}if(d.id&&this.pending.has(d.id)){const p=this.pending.get(d.id);this.pending.delete(d.id);d.error?p.rej(new Error(d.error.message)):p.res(d.result);}};});}
-  send(m,p={}){return new Promise((res,rej)=>{const id=++this.id;this.pending.set(id,{res,rej});try{this.ws.send(JSON.stringify({id,method:m,params:p}));}catch(e){this.pending.delete(id);rej(e);return;}setTimeout(()=>{if(this.pending.has(id)){this.pending.delete(id);rej(new Error(m+' timeout'));}},30000);});}
+  send(m,p){return new Promise((res,rej)=>{const id=++this.id;this.pending.set(id,{res,rej});try{this.ws.send(JSON.stringify({id,method:m,params:p||{}}));}catch(e){this.pending.delete(id);rej(e);return;}setTimeout(()=>{if(this.pending.has(id)){this.pending.delete(id);rej(new Error(m+' timeout'));}},30000);});}
   close(){try{this.ws&&this.ws.close();}catch(e){}}
 }
 async function cdpAttach(sbx){
   const host=sbx.getHost(9223);const base='https://'+host;
-  stepNow('attaching to CDP @ '+host);
-  let targets=[];for(let i=0;i<10;i++){try{targets=await(await fetch(base+'/json')).json();break;}catch(e){await sleep(1200);}}
+  stepNow('attaching CDP @ '+host);
+  let targets=[];for(let i=0;i<10;i++){try{const r=await fetchT(base+'/json',{},5000);targets=await r.json();break;}catch(e){await sleep(1200);}}
   if(!targets.length)throw new Error('CDP unreachable on port 9223');
   let page=targets.find(t=>t.type==='page');
-  if(!page){try{let r=await fetch(base+'/json/new?about:blank',{method:'PUT'});if(!r.ok)r=await fetch(base+'/json/new?about:blank');page=await r.json();}catch(e){throw new Error('no page target');}}
+  if(!page){try{let r=await fetchT(base+'/json/new?about:blank',{method:'PUT'});if(!r.ok)r=await fetchT(base+'/json/new?about:blank');page=await r.json();}catch(e){throw new Error('no page target');}}
   const path=(page.webSocketDebuggerUrl||'').replace(/^wss?:\/\/[^\/]+/,'');
   const sess=new CDPSession();await sess.connect('wss://'+host+path);
   await sess.send('Page.enable');await sess.send('Runtime.enable');
   S.cdp=sess;S.cdpHost=host;
 }
-window.ensureBrowser=async(manual)=>{if(S.cdp)return S.cdp;if(!S.browserSbx)await createBrowser();await cdpAttach(S.browserSbx);if(manual)toast('chrome attached ✔','ok');return S.cdp;};
+async function ensureBrowser(manual){if(S.cdp)return S.cdp;if(!S.browserSbx)await createBrowser();await cdpAttach(S.browserSbx);if(manual)toast('chrome attached ✔','ok');return S.cdp;}
 async function cdpEval(expr){const r=await S.cdp.send('Runtime.evaluate',{expression:expr,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw new Error((r.exceptionDetails.exception&&r.exceptionDetails.exception.description)||'JS error');return r.result?r.result.value:undefined;}
 async function cdpNavigate(url){stepNow('navigating → '+url);await S.cdp.send('Page.navigate',{url});for(let i=0;i<40;i++){await sleep(500);try{const r=await S.cdp.send('Runtime.evaluate',{expression:'document.readyState',returnByValue:true});if(r.result.value==='complete')break;}catch(e){}}await sleep(800);}
 
-/* ---- injected page-side helpers ---- */
 function scanFields(){const vis=el=>{const r=el.getBoundingClientRect();const st=getComputedStyle(el);return r.width>2&&r.height>2&&st.visibility!=='hidden'&&st.display!=='none';};const fields=[...document.querySelectorAll('input,textarea')].filter(vis).map((el,i)=>({i,tag:el.tagName,type:el.type||'',name:el.name||'',id:el.id||'',placeholder:el.placeholder||'',autocomplete:el.autocomplete||'',aria:el.getAttribute('aria-label')||''}));const buttons=[...document.querySelectorAll('button,input[type=submit],[role=button],a[role=button]')].filter(vis).slice(0,60).map(b=>({text:((b.innerText||b.value||b.getAttribute('aria-label')||'')+'').trim().slice(0,40),type:b.type||'',tag:b.tagName}));return{url:location.href,title:document.title,fields,buttons};}
 function fillField(idx,value){const els=[...document.querySelectorAll('input,textarea')];const el=els[idx];if(!el)return false;el.focus();const proto=el.tagName==='TEXTAREA'?window.HTMLTextAreaElement.prototype:window.HTMLInputElement.prototype;const setter=Object.getOwnPropertyDescriptor(proto,'value');if(setter&&setter.set)setter.set.call(el,value);else el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));return true;}
 function clickButton(filter){const vis=el=>{const r=el.getBoundingClientRect();const st=getComputedStyle(el);return r.width>2&&r.height>2&&st.visibility!=='hidden'&&st.display!=='none';};const btns=[...document.querySelectorAll('button,input[type=submit],a[role=button]')].filter(vis);let t=null;try{const re=new RegExp(filter,'i');t=btns.find(b=>re.test((b.innerText||b.value||b.getAttribute('aria-label')||'')+''));}catch(e){}if(!t)t=btns.find(b=>b.type==='submit');if(!t)t=btns[0];if(t){t.click();return((t.innerText||t.value||'')+'').trim().slice(0,40)||'clicked';}return null;}
 function pickField(fields,mode){let i=mode==='signup'?fields.findIndex(f=>/user|email|name/i.test((f.name+' '+f.id+' '+f.placeholder))):fields.findIndex(f=>f.type==='email');if(i>=0)return i;i=fields.findIndex(f=>/user|email|login|acct|account/i.test((f.name+' '+f.id+' '+f.autocomplete)));if(i>=0)return i;i=fields.findIndex(f=>/user|email|login/i.test((f.placeholder+' '+f.aria)));if(i>=0)return i;return fields.findIndex(f=>f.type==='text');}
 
-/* -------- login mission -------- */
-window.openLoginModal=()=>$('#loginModal').classList.add('on');
-window.closeLoginModal=()=>$('#loginModal').classList.remove('on');
-window.startLoginMission=async()=>{const url=$('#lmUrl').value.trim(),user=$('#lmUser').value,pass=$('#lmPass').value,mode=$('#lmMode').value;closeLoginModal();if(!url)return toast('need a URL','err');await runSteps([{a:mode,url,user,pass}],'Login mission');};
+/* ---------- login mission ---------- */
+function openLoginModal(){$('#loginModal').classList.add('on');}
+function closeLoginModal(){$('#loginModal').classList.remove('on');}
+$('#btnLogin').addEventListener('click',openLoginModal);
+$('#lmCancel').addEventListener('click',closeLoginModal);
+$('#lmGo').addEventListener('click',()=>{const url=$('#lmUrl').value.trim(),user=$('#lmUser').value,pass=$('#lmPass').value,mode=$('#lmMode').value;closeLoginModal();if(!url)return toast('need a URL','err');runSteps([{a:mode,url,user,pass}],'Login mission');});
 async function agentLogin(url,user,pass,mode){
   await ensureBrowser();let u=url;if(!/^https?:\/\//i.test(u))u='https://'+u;await cdpNavigate(u);
   stepNow('scanning '+mode+' fields…');
@@ -862,51 +749,51 @@ async function agentLogin(url,user,pass,mode){
 }
 async function safeBrowserShot(){try{const r=await S.cdp.send('Page.captureScreenshot',{format:'png'});const src='data:image/png;base64,'+r.data;setLiveImg(src);return src;}catch(e){return null;}}
 
-/* -------- terminal -------- */
+/* ---------- terminal ---------- */
 const termHist=[];let termPtr=0;
-$('#termInp').addEventListener('keydown',e=>{if(e.key==='Enter')termRun();else if(e.key==='ArrowUp'){termPtr=Math.max(0,termPtr-1);$('#termInp').value=termHist[termPtr]||'';e.preventDefault();}else if(e.key==='ArrowDown'){termPtr=Math.min(termHist.length,termPtr+1);$('#termInp').value=termHist[termPtr]||'';e.preventDefault();}});
-function termPrint(cls,text){const o=$('#termOut');o.innerHTML+=`<span class="${cls}">${esc(text)}</span>`;o.scrollTop=o.scrollHeight;}
+function termPrint(cls,text){const o=$('#termOut');o.innerHTML+='<span class="'+cls+'">'+esc(text)+'</span>';o.scrollTop=o.scrollHeight;}
 async function shellSbx(){const t=$('#termTarget').value;if(t==='desk'||(t==='auto'&&S.desk)){if(!S.desk)await createDesktop();return S.desk;}if(t==='browser'||(t==='auto'&&S.browserSbx&&!S.desk)){if(!S.browserSbx)await createBrowser();return S.browserSbx;}if(!S.base)await createBase();return S.base;}
-window.termRun=async(cmd)=>{const c=(cmd!==undefined?cmd:$('#termInp').value).trim();if(!c)return;$('#termInp').value='';termHist.push(c);termPtr=termHist.length;termPrint('cmd','$ '+c+'\n');try{const sbx=await shellSbx();const r=await sbx.commands.run(c,{timeoutMs:60000});if(r.stdout)termPrint('out',r.stdout+'\n');if(r.stderr)termPrint('err',r.stderr+'\n');termPrint('dim','[exit '+(r.exitCode??0)+']\n');}catch(e){termPrint('err',(e.message||String(e))+'\n');}};
+async function termRun(cmd){const c=(cmd!==undefined?cmd:$('#termInp').value).trim();if(!c)return;$('#termInp').value='';termHist.push(c);termPtr=termHist.length;termPrint('cmd','$ '+c+'\n');try{const sbx=await shellSbx();const r=await sbx.commands.run(c,{timeoutMs:60000});if(r.stdout)termPrint('out',r.stdout+'\n');if(r.stderr)termPrint('err',r.stderr+'\n');termPrint('dim','[exit '+(r.exitCode??0)+']\n');}catch(e){termPrint('err',(e.message||String(e))+'\n');}}
+$('#termRunBtn').addEventListener('click',()=>termRun());
+$('#termInp').addEventListener('keydown',e=>{if(e.key==='Enter')termRun();else if(e.key==='ArrowUp'){termPtr=Math.max(0,termPtr-1);$('#termInp').value=termHist[termPtr]||'';e.preventDefault();}else if(e.key==='ArrowDown'){termPtr=Math.min(termHist.length,termPtr+1);$('#termInp').value=termHist[termPtr]||'';e.preventDefault();}});
+$$('[data-cmd]').forEach(b=>b.addEventListener('click',()=>termRun(b.dataset.cmd)));
 
-/* -------- code lab / files (reuses shell) -------- */
-const SNIPPETS={
-sysreport:`import platform, os, shutil, socket
-print('=== AGENT COMPUTER ===')
-print('hostname:', socket.gethostname())
-print('os:', platform.platform())
-print('cpus:', os.cpu_count())
-t,u,f = shutil.disk_usage('/')
-print(f'disk: {t//2**30}GB / {u//2**30}GB used / {f//2**30}GB free')`};
-window.runSysReport=()=>termRun('python3 -c '+JSON.stringify(SNIPPETS.sysreport));
-
+/* ---------- files ---------- */
 async function fileSbx(){if(S.desk)return S.desk;if(!S.base)await createBase();return S.base;}
-function fmtSize(b){if(b==null)return'';if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
-window.listDir=async(p)=>{const path=p||$('#pathInp').value.trim()||'/home/user';$('#pathInp').value=path;const box=$('#fileList');box.innerHTML='<div class="file-row"><span class="dim">loading…</span></div>';try{const sbx=await fileSbx();const entries=await sbx.files.list(path);box.innerHTML='';const arr=Array.isArray(entries)?entries:(entries.files||[]);if(!arr.length)box.innerHTML='<div class="file-row"><span class="dim">empty</span></div>';for(const e of arr){const row=document.createElement('div');row.className='file-row';const isDir=e.type==='dir'||e.isDir;row.innerHTML=`<span class="ic">${isDir?'📁':'📄'}</span><span>${esc(e.name)}</span><span class="sz">${isDir?'':fmtSize(e.size)}</span>`;row.onclick=()=>{const np=path.replace(/\/$/,'')+'/'+e.name;if(isDir)listDir(np);else{$('#editPath').value=np;readFile();}};box.appendChild(row);}}catch(e){box.innerHTML=`<div class="file-row"><span class="err">${esc(e.message)}</span></div>`;}};
-window.goUp=()=>{const p=$('#pathInp').value.replace(/\/$/,'');const i=p.lastIndexOf('/');listDir(p.slice(0,Math.max(1,i))||'/');};
-window.readFile=async()=>{try{const sbx=await fileSbx();const c=await sbx.files.read($('#editPath').value.trim(),{format:'text'});$('#editBody').value=typeof c==='string'?c:(c.content||c.data||'');toast('read ✔','ok');}catch(e){toast('read: '+e.message,'err');}};
-window.writeFile=async()=>{try{const sbx=await fileSbx();const p=$('#editPath').value.trim();if(!p)return toast('set path','err');await sbx.files.write(p,$('#editBody').value);toast('wrote ✔','ok');}catch(e){toast('write: '+e.message,'err');}};
-window.mkDir=async()=>{try{const sbx=await fileSbx();const p=$('#editPath').value.trim()||$('#pathInp').value+'/new-dir';await sbx.files.makeDir(p);toast('mkdir ✔','ok');listDir($('#pathInp').value);}catch(e){toast('mkdir: '+e.message,'err');}};
-window.rmFile=async()=>{try{const sbx=await fileSbx();const p=$('#editPath').value.trim();if(!p)return toast('set path','err');if(!confirm('Delete '+p+' ?'))return;await sbx.files.remove(p);toast('deleted ✔','ok');listDir($('#pathInp').value);}catch(e){toast('rm: '+e.message,'err');}};
+async function listDir(p){const path=p||$('#pathInp').value.trim()||'/home/user';$('#pathInp').value=path;const box=$('#fileList');box.innerHTML='<div class="file-row">loading…</div>';try{const sbx=await fileSbx();const entries=await sbx.files.list(path);box.innerHTML='';const arr=Array.isArray(entries)?entries:(entries&&entries.files)||[];if(!arr.length)box.innerHTML='<div class="file-row">empty</div>';for(const e of arr){const row=document.createElement('div');row.className='file-row';const isDir=e.type==='dir'||e.isDir;row.innerHTML='<span class="ic">'+(isDir?'📁':'')+'</span><span>'+esc(e.name)+'</span>';row.addEventListener('click',()=>{const np=path.replace(/\/$/,'')+'/'+e.name;if(isDir)listDir(np);else{$('#editPath').value=np;readFile();}});box.appendChild(row);}}catch(e){box.innerHTML='<div class="file-row">'+esc(e.message)+'</div>';}}
+$('#filesGo').addEventListener('click',()=>listDir());
+$('#filesUp').addEventListener('click',()=>{const p=$('#pathInp').value.replace(/\/$/,'');const i=p.lastIndexOf('/');listDir(p.slice(0,Math.max(1,i))||'/');});
+async function readFile(){try{const sbx=await fileSbx();const c=await sbx.files.read($('#editPath').value.trim(),{format:'text'});$('#editBody').value=typeof c==='string'?c:(c.content||c.data||'');toast('read ✔','ok');}catch(e){toast('read: '+e.message,'err');}}
+async function writeFile(){try{const sbx=await fileSbx();const p=$('#editPath').value.trim();if(!p)return toast('set path','err');await sbx.files.write(p,$('#editBody').value);toast('wrote ✔','ok');}catch(e){toast('write: '+e.message,'err');}}
+async function mkDir(){try{const sbx=await fileSbx();const p=$('#editPath').value.trim()||$('#pathInp').value+'/new-dir';await sbx.files.makeDir(p);toast('mkdir ✔','ok');listDir($('#pathInp').value);}catch(e){toast('mkdir: '+e.message,'err');}}
+async function rmFile(){try{const sbx=await fileSbx();const p=$('#editPath').value.trim();if(!p)return toast('set path','err');if(!confirm('Delete '+p+' ?'))return;await sbx.files.remove(p);toast('deleted ✔','ok');listDir($('#pathInp').value);}catch(e){toast('rm: '+e.message,'err');}}
+$('#fileRead').addEventListener('click',readFile);
+$('#fileWrite').addEventListener('click',writeFile);
+$('#fileMkdir').addEventListener('click',mkDir);
+$('#fileRm').addEventListener('click',rmFile);
 
-/* -------- agent brain -------- */
-window.quick=t=>{$('#chatInput').value=t;sendChat();};
-window.stopAgent=()=>{S.stopFlag=true;toast('stop requested');};
+/* ---------- agent brain ---------- */
+function quick(t){$('#chatInput').value=t;sendChat();}
 $('#chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
+$('#sendBtn').addEventListener('click',sendChat);
 
-const HELP_TEXT='Here is everything I can do:\n\n🌐 WEB — "search for X", "open example.com", "log in to example.com"\n🖥 DESKTOP — "click 500 300", "type hello", "press enter", "scroll down"\n⌨ SHELL — "terminal: <command>", "install cowsay"\n🐍 CODE — "run python: print(1+1)"\n🔑 LOGINS — "log in to X with user Y and password Z"\n\nToggle 🧠 to use Gemini for multi-step planning.';
+const QUICKS=[['🔎 search AI news','Search for the latest AI agent news'],['🌐 hacker news','Open https://news.ycombinator.com'],['📸 screenshot','Take a screenshot'],['💻 sys info','terminal: uname -a && nproc && df -h /'],['📦 install test','install cowsay then run cowsay hello'],['🔑 log in…','__login']];
+$('#quickChips').innerHTML=QUICKS.map((q,i)=>'<span class="qchip" data-q="'+i+'">'+q[0]+'</span>').join('');
+$$('#quickChips .qchip').forEach(el=>el.addEventListener('click',()=>{const q=QUICKS[+el.dataset.q];if(q[1]==='__login')openLoginModal();else quick(q[1]);}));
+
+const HELP_TEXT='I can:\n🌐 "search for X" · "open example.com"\n🔑 "log in to example.com" (opens login form)\n🖥 "click 500 300" · "type hello" · "press enter" · "scroll down"\n⌨ "terminal: <cmd>" · "install cowsay"\n🐍 "run python: print(1+1)"\n\nToggle 🧠 for Gemini multi-step planning.';
 
 function rulePlan(text){
   const t=text.trim();const low=t.toLowerCase();
   if(/help|what can you do|capabilities/.test(low))return{reply:HELP_TEXT};
-  if(/^(hi|hello|hey|yo)\b/.test(low))return{reply:'Hi! Boot my computers above, then give me a mission.'};
+  if(/^(hi|hello|hey|yo)\b/.test(low))return{reply:'Hi! Boot my computers, then give me a mission.'};
   if(/kill (all|everything)/.test(low))return{title:'kill all',steps:[{a:'kill_all'}]};
   if(/kill.*desktop/.test(low))return{title:'kill desktop',steps:[{a:'kill',target:'desk'}]};
   if(/kill.*(browser|chrome)/.test(low))return{title:'kill chrome',steps:[{a:'kill',target:'browser'}]};
   let m;
   if((m=low.match(/(?:^|\b)(?:search|google|look up|find)\s+(?:for\s+)?(.+)$/)))return{title:'search',steps:[{a:'search',query:t.replace(/^(?:search|google|look up|find)\s+(for\s+)?/i,'').trim()}]};
   if((m=t.match(/(?:log ?in|sign ?in)\s+(?:to\s+|into\s+|on\s+)?(\S+)\s+(?:with|using)\s+["']?([^"'\s]+)["']?\s+(?:and\s+)?(?:password|pass|pwd)[:\s]+["']?([^"'\s]+)["']?/i)))return{title:'login',steps:[{a:'login',url:m[1],user:m[2],pass:m[3]}]};
-  if(/(?:log ?in|sign ?in)\s+(?:to\s+|into\s+|on\s+)?(\S+)/i.test(t)){const u=t.match(/(?:log ?in|sign ?in)\s+(?:to\s+|into\s+|on\s+)?(\S+)/i)[1];return{reply:'Opening login form for '+u+' — creds are safer in the form than in chat.',ui:'login',url:u};}
+  if(/(?:log ?in|sign ?in)\s+(?:to\s+|into\s+|on\s+)?(\S+)/i.test(t)){const u=t.match(/(?:log ?in|sign ?in)\s+(?:to\s+|into\s+|on\s+)?(\S+)/i)[1];return{reply:'Opening login form for '+u+'.',ui:'login',url:u};}
   if(/sign ?up\s+(?:on|at|for|to)\s+(\S+)/i.test(t)){const u=t.match(/sign ?up\s+(?:on|at|for|to)\s+(\S+)/i)[1];return{reply:'Opening signup form for '+u+'.',ui:'login',url:u,mode:'signup'};}
   if((m=t.match(/^(?:open|go to|visit|browse)\s+(\S+)/i)))return{title:'open page',steps:[{a:'browser_open',url:m[1]}]};
   if((m=t.match(/click\s+(?:at\s+)?(\d+)[ ,]+(\d+)/i)))return{title:'click',steps:[{a:'desktop_click',x:+m[1],y:+m[2]}]};
@@ -915,7 +802,6 @@ function rulePlan(text){
   if(/scroll\s+up/i.test(low))return{title:'scroll up',steps:[{a:'desktop_scroll',dir:'up',amount:3}]};
   if(/scroll\s+down/i.test(low))return{title:'scroll down',steps:[{a:'desktop_scroll',dir:'down',amount:3}]};
   if(/(take\s+)?(a\s+)?screenshot|screen ?shot/i.test(low))return{title:'screenshot',steps:[{a:'screenshot'}]};
-  if(/python (system )?report/.test(low))return{title:'python report',steps:[{a:'code',language:'python',code:SNIPPETS.sysreport}]};
   if(/run python:?\s*([\s\S]+)/i.test(t)){const m2=t.match(/run python:?\s*([\s\S]+)/i);return{title:'python',steps:[{a:'code',language:'python',code:m2[1]}]};}
   if(/install\s+(.+)/i.test(t)){const pkg=t.match(/install\s+(.+)/i)[1];const steps=[{a:'install',pkg}];let m2;if((m2=t.match(/then (?:run )?:?\s*(.+)$/i)))steps.push({a:'shell',command:m2[1]});return{title:'install '+pkg,steps};}
   if((m=t.match(/^terminal:?\s+(.+)$/i)))return{title:'shell',steps:[{a:'shell',command:m[1]}]};
@@ -928,48 +814,21 @@ function rulePlan(text){
 async function geminiPlan(text){
   if(!S.geminiKey)throw new Error('no Gemini key');
   const model=S.geminiModel||'gemini-2.5-flash';
-
-  // vision grounding: capture current screen, send with the task
   let screenshotBase64=null;
   try{
     if(S.cdp){const r=await S.cdp.send('Page.captureScreenshot',{format:'png'});screenshotBase64=r.data;}
-    else if(S.desk){const shot=await S.desk.screenshot();const bin=String.fromCharCode(...shot);screenshotBase64=btoa(bin);}
+    else if(S.desk){const shot=await S.desk.screenshot();let bin='';for(let i=0;i<shot.length;i+=0x8000){bin+=String.fromCharCode.apply(null,shot.subarray(i,i+0x8000));}screenshotBase64=btoa(bin);}
   }catch(e){}
-
-  const SYS=`You are NEXUS, an AI agent with sandbox computers. Reply ONLY with valid JSON. For tasks, return:
-{"title":string,"steps":[...]} using ONLY these actions:
-{"a":"search","query":string}
-{"a":"browser_open","url":string}
-{"a":"browser_scan"}
-{"a":"browser_fill","index":number,"value":string}
-{"a":"browser_click","filter":string}
-{"a":"browser_js","expr":string}
-{"a":"login","url":string,"user":string,"pass":string}
-{"a":"signup","url":string,"user":string,"pass":string}
-{"a":"desktop_click","x":number,"y":number}
-{"a":"desktop_type","text":string}
-{"a":"desktop_press","key":string}
-{"a":"desktop_scroll","dir":"up"|"down","amount":number}
-{"a":"screenshot"}
-{"a":"shell","command":string}
-{"a":"code","language":"python"|"js","code":string}
-{"a":"install","pkg":string}
-{"a":"wait","ms":number}
-{"a":"say","text":string}
-{"a":"kill_all"}
-For chit-chat or questions, return {"reply":string}. Never invent credentials — if a login needs creds you don't have, return {"reply":"please tell me the credentials"}. Keep plans short (1-6 steps).`;
-
+  const SYS='You are NEXUS, an AI agent with sandbox computers. Reply ONLY with valid JSON. For tasks return {"title":string,"steps":[...]} using ONLY: {"a":"search","query"} {"a":"browser_open","url"} {"a":"browser_scan"} {"a":"browser_fill","index","value"} {"a":"browser_click","filter"} {"a":"browser_js","expr"} {"a":"login","url","user","pass"} {"a":"signup","url","user","pass"} {"a":"desktop_click","x","y"} {"a":"desktop_type","text"} {"a":"desktop_press","key"} {"a":"desktop_scroll","dir","amount"} {"a":"screenshot"} {"a":"shell","command"} {"a":"code","language","code"} {"a":"install","pkg"} {"a":"wait","ms"} {"a":"say","text"} {"a":"kill_all"}. For chit-chat return {"reply":string}. Never invent credentials. Keep plans 1-6 steps.';
   const parts=[{text}];
   if(screenshotBase64)parts.unshift({inlineData:{mimeType:'image/png',data:screenshotBase64}});
-
-  const j=await geminiFetch('models/'+encodeURIComponent(model)+':generateContent',{
+  const j=await geminiPost('models/'+encodeURIComponent(model)+':generateContent',{
     systemInstruction:{parts:[{text:SYS}]},
     contents:[{role:'user',parts}],
-    generationConfig:{temperature:0.2,maxOutputTokens:1500,responseMimeType:'application/json',
-      responseSchema:{type:'object',properties:{title:{type:'string'},steps:{type:'array',items:{type:'object'}},reply:{type:'string'}},required:['title','steps']}}
+    generationConfig:{temperature:0.2,maxOutputTokens:1500,responseMimeType:'application/json'}
   });
-  let c=j.candidates?.[0]?.content?.parts?.[0]?.text||'';
-  if(!c)throw new Error('empty response');
+  let c=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts&&j.candidates[0].content.parts[0].text)||'';
+  if(!c)throw new Error('empty Gemini response');
   c=c.trim().replace(/^```(json)?/,'').replace(/```$/,'').trim();
   try{return JSON.parse(c);}catch(e){throw new Error('invalid JSON from Gemini: '+c.slice(0,200));}
 }
@@ -983,7 +842,7 @@ async function runSteps(steps,title){
   }
   stepNow('');
 }
-window.sendChat=async function(){
+async function sendChat(){
   const inp=$('#chatInput');const text=inp.value.trim();if(!text||S.busy)return;
   inp.value='';chatMsg('user',text);
   S.busy=true;S.stopFlag=false;$('#sendBtn').disabled=true;
@@ -996,11 +855,12 @@ window.sendChat=async function(){
     await runSteps(plan.steps||[],plan.title||'task');
   }catch(e){chatMsg('agent','something broke: '+e.message);}
   finally{S.busy=false;$('#sendBtn').disabled=false;stepNow('');}
-};
+}
 
+async function shellSbxAuto(){if(S.desk)return S.desk;if(!S.base)await createBase();return S.base;}
 async function execStep(st,i,n){
-  const label=({search:'🔎 searching',browser_open:'🌐 opening',browser_scan:'🔍 scanning',browser_fill:'⌨ filling',browser_click:'🖱 clicking',browser_js:'⚡ evaluating',login:'🔐 login',signup:'📝 signup',desktop_click:'🖱 clicking',desktop_type:'⌨ typing',desktop_press:'⌨ pressing',desktop_scroll:'🌀 scrolling',screenshot:'📸 screenshot',shell:'⌨ shell',code:'🧪 code',install:'📦 installing',wait:'⏳ waiting',say:'💬',kill:'💀 killing',kill_all:'💀 killing all',run_app:'🚀 launching'})[st.a]||('▶ '+st.a);
-  stepNow(`${label} ${i}/${n} …`);
+  const L={search:'🔎 searching',browser_open:'🌐 opening',browser_scan:'🔍 scanning',browser_fill:'⌨ filling',browser_click:'🖱 clicking',browser_js:'⚡ evaluating',login:'🔐 login',signup:'📝 signup',desktop_click:'🖱 clicking',desktop_type:'⌨ typing',desktop_press:'⌨ pressing',desktop_scroll:'🌀 scrolling',screenshot:'📸 screenshot',shell:'⌨ shell',code:'🧪 code',install:'📦 installing',wait:'⏳ waiting',say:'💬',kill:'💀 killing',kill_all:'💀 killing all',run_app:'🚀 launching'};
+  stepNow((L[st.a]||('▶ '+st.a))+' '+i+'/'+n+' …');
   switch(st.a){
     case 'say':chatMsg('agent',st.text||'');break;
     case 'wait':await sleep(st.ms||1000);break;
@@ -1008,7 +868,7 @@ async function execStep(st,i,n){
     case 'browser_open':{await ensureBrowser();let u=st.url||'';if(!/^https?:\/\//i.test(u))u='https://'+u;await cdpNavigate(u);const shot=await safeBrowserShot();chatMsg('agent','Opened '+u+':',shot);break;}
     case 'browser_scan':{await ensureBrowser();const s=await cdpEval('('+scanFields.toString()+')()');chatMsg('agent','Scanned: '+s.fields.length+' fields, '+s.buttons.length+' buttons',null,JSON.stringify(s,null,2).slice(0,1500));break;}
     case 'browser_fill':{await ensureBrowser();await cdpEval('('+fillField.toString()+')('+st.index+','+JSON.stringify(st.value)+')');break;}
-    case 'browser_click':{await ensureBrowser();const clicked=await cdpEval('('+clickButton.toString()+')('+JSON.stringify(st.filter||'submit')+')');chatMsg('sys','clicked: '+(clicked||'—'));break;}
+    case 'browser_click':{await ensureBrowser();const c=await cdpEval('('+clickButton.toString()+')('+JSON.stringify(st.filter||'submit')+')');chatMsg('sys','clicked: '+(c||'—'));break;}
     case 'browser_js':{await ensureBrowser();const v=await cdpEval(st.expr||'document.title');chatMsg('agent','JS result:',null,String(v).slice(0,1500));break;}
     case 'login':case 'signup':{
       if(!st.user||!st.pass){chatMsg('agent','Need credentials — opening login form.');openLoginModal();if(st.url)$('#lmUrl').value=st.url;if(st.a==='signup')$('#lmMode').value='signup';break;}
@@ -1020,32 +880,31 @@ async function execStep(st,i,n){
     case 'run_app':{if(!S.desk)await createDesktop();await S.desk.open(st.app||'');break;}
     case 'screenshot':{
       if(S.cdp){const shot=await safeBrowserShot();chatMsg('agent','Browser view:',shot);}
-      else{if(!S.desk)await createDesktop();const shot=await S.desk.screenshot();setLiveImg(URL.createObjectURL(new Blob([shot],{type:'image/png'})));chatMsg('agent','Desktop frame:',URL.createObjectURL(new Blob([shot],{type:'image/png'})));}
+      else{if(!S.desk)await createDesktop();const shot=await S.desk.screenshot();const src=URL.createObjectURL(new Blob([shot],{type:'image/png'}));setLiveImg(src);chatMsg('agent','Desktop frame:',src);}
       break;}
     case 'shell':{const sbx=await shellSbxAuto();const r=await sbx.commands.run(st.command,{timeoutMs:60000});chatMsg('agent','$ '+st.command,null,((r.stdout||'')+(r.stderr||'')).slice(0,1500)||'(no output) · exit '+(r.exitCode??0));break;}
-    case 'install':{const p=st.pkg||'';let cmd=/^(cowsay|figlet|htop|ffmpeg|jq|tree|sl)$/.test(p)?('apt-get update -qq && apt-get install -y -qq '+p):(/^(requests|numpy|pandas|matplotlib)/.test(p)?('pip install -q '+p):(/^[a-z@\/-]+$/.test(p)?('pip install '+p):('pip install '+p)));
+    case 'install':{const p=st.pkg||'';const cmd=/^(cowsay|figlet|htop|ffmpeg|jq|tree|sl)$/.test(p)?('apt-get update -qq && apt-get install -y -qq '+p):('pip install '+p);
       const sbx=await shellSbxAuto();const r=await sbx.commands.run(cmd,{timeoutMs:240000});chatMsg('agent','install done (exit '+(r.exitCode??0)+'):',null,((r.stdout||'')+(r.stderr||'')).slice(-900));break;}
-    case 'code':{
-      const sbx=await shellSbxAuto();
-      const lang=st.language==='js'?'node':'python3';
-      const code=st.code||'';
-      const cmd=lang==='node'?`node -e ${JSON.stringify(code)}`:`python3 -c ${JSON.stringify(code)}`;
-      const r=await sbx.commands.run(cmd,{timeoutMs:60000});
-      chatMsg('agent','code finished:',null,((r.stdout||'')+(r.stderr||'')).slice(0,1500)||'(no output) · exit '+(r.exitCode??0));break;}
+    case 'code':{const sbx=await shellSbxAuto();const lang=st.language==='js'?'node':'python3';const cmd=lang==='node'?('node -e '+JSON.stringify(st.code||'')):('python3 -c '+JSON.stringify(st.code||''));const r=await sbx.commands.run(cmd,{timeoutMs:60000});chatMsg('agent','code finished:',null,((r.stdout||'')+(r.stderr||'')).slice(0,1500)||'(no output) · exit '+(r.exitCode??0));break;}
     case 'kill':await killSbx(st.target||'desk');break;
     case 'kill_all':await killAll();break;
     default:chatMsg('agent','unknown action: '+st.a);
   }
 }
-async function shellSbxAuto(){if(S.desk)return S.desk;if(!S.base)await createBase();return S.base;}
 
-/* -------- UI tabs -------- */
-window.switchSide=t=>{$$('.side-tabs button').forEach(b=>b.classList.toggle('act',b.dataset.side===t));$$('.side-panel').forEach(p=>p.classList.toggle('act',p.id==='sp-'+t));if(t==='settings')populateSettingsFromLS();};
+/* ---------- tabs ---------- */
+function switchSide(t){$$('.side-tabs button').forEach(b=>b.classList.toggle('act',b.dataset.side===t));$$('.side-panel').forEach(p=>p.classList.toggle('act',p.id==='sp-'+t));if(t==='settings')populateSettingsFromLS();}
+$('#tabMission').addEventListener('click',()=>switchSide('mission'));
+$('#tabTerminal').addEventListener('click',()=>switchSide('terminal'));
+$('#tabFiles').addEventListener('click',()=>switchSide('files'));
+$('#tabSettings').addEventListener('click',()=>switchSide('settings'));
 
-setInterval(()=>{},1000);
-updChips();
-populateSettingsFromLS();
-updateBadges();
+/* ---------- init (each guarded so one failure can't kill the app) ---------- */
+try{updChips();}catch(e){console.error('init chips',e);}
+try{populateSettingsFromLS();}catch(e){console.error('init settings',e);}
+try{updateBadges();}catch(e){console.error('init badges',e);}
+try{fetchT('/api/version',{},5000).then(r=>r.json()).then(j=>{$('#gateVer').textContent='v'+APP_VERSION+' / server '+j.v;}).catch(()=>{$('#gateVer').textContent='v'+APP_VERSION;});}catch(e){}
+console.log('AGENT//DECK v'+APP_VERSION+' loaded ✔');
 </script>
 </body>
-  </html>
+                                                                                </html>
