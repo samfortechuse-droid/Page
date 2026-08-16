@@ -2,7 +2,6 @@ services:
   - type: web
     name: agent-deck
     runtime: static
-    plan: free
     staticPublishPath: ./
     headers:
       - path: /*
