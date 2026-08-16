@@ -129,7 +129,7 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
 .msg.agent .bub{background:#1a1a1d;border:1px solid var(--border)}
 .msg.sys .bub{background:transparent;border:1px dashed var(--border);color:var(--tx-2);font-family:var(--mono);font-size:11px}
 .msg .bub img{max-width:100%;border-radius:6px;margin-top:6px;border:1px solid var(--border)}
-.msg .bub .out{font-family:var(--mono);font-size:10.5px;background:#000;border-radius:6px;padding:7px 9px;margin-top:6px;white-space:pre-wrap;max-height:140px;overflow:auto;color:var(--accent-2)}
+.msg .bub .out{font-family:var(--mono);font-size:10.5px;background:#000;border-radius:6px;padding:7px 9px;margin-top:6px;white-space:pre-wrap;max-height:200px;overflow:auto;color:var(--accent-2)}
 .typing{display:inline-flex;gap:4px;padding:10px 12px}
 .typing i{width:5px;height:5px;border-radius:50%;background:var(--tx-2);animation:tp 1s infinite}
 .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
@@ -185,7 +185,6 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
   .tb-brand span{display:none}
   .topbar{padding:0 12px;gap:8px}
   .gate{padding:24px 20px}
-  /* mission panel scrolls; chat input sticky so it's ALWAYS reachable */
   #sp-mission{overflow-y:auto;-webkit-overflow-scrolling:touch}
   .mission-body{flex:none;overflow:visible}
   .chat-wrap{flex:none;min-height:0}
@@ -295,7 +294,7 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
           <div id="stepNow"></div>
           <div id="chatLog"></div>
           <div class="chat-in">
-            <textarea id="chatInput" placeholder='order the agent… e.g. "open hacker news"' rows="1"></textarea>
+            <textarea id="chatInput" placeholder='order the agent… e.g. "open hacker news" or "read my inbox"' rows="1"></textarea>
             <button class="btn btn-primary" id="sendBtn">➤</button>
           </div>
         </div>
@@ -405,11 +404,11 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
   <div class="modal">
     <h3>Login mission</h3>
     <div class="sub">The agent opens this site in <b>its own Chrome</b>, finds the fields, types your creds, submits.</div>
-    <div class="frow"><span class="lbl">URL</span><input id="lmUrl" class="inp" placeholder="https://example.com/login"></div>
+    <div class="frow"><span class="lbl">URL</span><input id="lmUrl" class="inp" placeholder="https://mail.mailbox.org"></div>
     <div class="frow"><span class="lbl">Username / email</span><input id="lmUser" class="inp"></div>
     <div class="frow"><span class="lbl">Password</span><input id="lmPass" class="inp" type="password"></div>
     <div class="frow"><span class="lbl">Mode</span><select id="lmMode" class="inp"><option value="login">log in</option><option value="signup">sign up</option></select></div>
-    <div class="statusline">⚠ Creds used once, never stored.</div>
+    <div class="statusline">⚠ Creds used once, never stored. If 2FA pops up, type the code yourself on the live VNC view.</div>
     <div class="acts">
       <button class="btn btn-secondary" id="lmCancel">cancel</button>
       <button class="btn btn-primary" id="lmGo">go ▸</button>
@@ -420,8 +419,8 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
 <div class="toast-wrap" id="toasts"></div>
 
 <script type="module">
-/* AGENT//DECK v2.4 */
-const APP_VERSION='2.4';
+/* AGENT//DECK v2.5 */
+const APP_VERSION='2.5';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -595,7 +594,7 @@ async function connect(){
     try{populateSettingsFromLS();}catch(e){}
     try{updateBadges();}catch(e){}
     chatMsg('sys','connected as '+novitaKey.slice(0,8)+'…');
-    if(geminiKey){chatMsg('agent','Gemini brain online. Try "search for AI agent news", "open hacker news", or the login mission.');fetchModels(true).catch(()=>{});}
+    if(geminiKey){chatMsg('agent','Gemini brain online. Try "log in to mailbox.org" then "read my inbox", or "search for AI agent news".');fetchModels(true).catch(()=>{});}
     else chatMsg('agent','No Gemini key — rule-based planner active. Add a key in ⚙.');
   }catch(e){
     console.error(e);
@@ -752,24 +751,28 @@ $('#mbStream').addEventListener('click',async()=>{if(S.desk)await deskStreamBtn(
 $('#mbFrames').addEventListener('click',async()=>{if(S.cdp){await browserShotBtn();}else if(S.desk){startDeskPoll();}else toast('boot a sandbox first','err');});
 $('#mbRefresh').addEventListener('click',async()=>{if(S.liveMode==='frames'){if(S.cdp)await browserShotBtn();else if(S.desk)await deskShotBtn();}else if(S.liveMode==='stream'&&S.vncUrl)setLiveIframe(S.vncUrl);});
 
-/* ---- CDP ---- */
+/* ---- CDP (via server-proxied WebSocket) ---- */
 class CDPSession{
   constructor(){this.ws=null;this.id=0;this.pending=new Map();}
-  connect(url){return new Promise((res,rej)=>{this.ws=new WebSocket(url);const t=setTimeout(()=>rej(new Error('ws timeout')),15000);this.ws.onopen=()=>{clearTimeout(t);res();};this.ws.onerror=()=>{clearTimeout(t);rej(new Error('ws error'));};this.ws.onmessage=m=>{let d;try{d=JSON.parse(m.data);}catch(e){return;}if(d.id&&this.pending.has(d.id)){const p=this.pending.get(d.id);this.pending.delete(d.id);d.error?p.rej(new Error(d.error.message)):p.res(d.result);}};});}
+  connect(url){return new Promise((res,rej)=>{this.ws=new WebSocket(url);const t=setTimeout(()=>rej(new Error('ws timeout')),15000);this.ws.onopen=()=>{clearTimeout(t);res();};this.ws.onerror=ev=>{clearTimeout(t);rej(new Error('ws error (check server WS proxy)'));};this.ws.onclose=()=>{};this.ws.onmessage=m=>{let d;try{d=JSON.parse(m.data);}catch(e){return;}if(d.id&&this.pending.has(d.id)){const p=this.pending.get(d.id);this.pending.delete(d.id);d.error?p.rej(new Error(d.error.message)):p.res(d.result);}};});}
   send(m,p){return new Promise((res,rej)=>{const id=++this.id;this.pending.set(id,{res,rej});try{this.ws.send(JSON.stringify({id,method:m,params:p||{}}));}catch(e){this.pending.delete(id);rej(e);return;}setTimeout(()=>{if(this.pending.has(id)){this.pending.delete(id);rej(new Error(m+' timeout'));}},30000);});}
   close(){try{this.ws&&this.ws.close();}catch(e){}}
 }
 async function cdpAttach(sbx){
   const host=sbx.getHost(9223);
-  stepNow('attaching CDP …');
+  stepNow('attaching CDP via proxy …');
   let targets=[];
   for(let i=0;i<10;i++){try{const r=await fetchT(`/api/cdp/${sbx.sandboxId}/json`,{headers:{'X-Novita-Domain':sbx.sbxDomain||S.domain,'X-Novita-Key':S.apiKey}},6000);targets=await r.json();break;}catch(e){await sleep(1200);}}
   if(!targets.length)throw new Error('CDP unreachable');
   let page=targets.find(t=>t.type==='page');
   if(!page){try{const r=await fetchT(`/api/cdp/${sbx.sandboxId}/json/new?about:blank`,{method:'PUT',headers:{'X-Novita-Domain':sbx.sbxDomain||S.domain,'X-Novita-Key':S.apiKey}});page=await r.json();}catch(e){throw new Error('no page target');}}
-  const path=(page.webSocketDebuggerUrl||'').replace(/^wss?:\/\/[^\/]+/,'');
-  const sess=new CDPSession();await sess.connect('wss://'+host+path);
-  await sess.send('Page.enable');await sess.send('Runtime.enable');
+  const origPath=(page.webSocketDebuggerUrl||'').replace(/^wss?:\/\/[^\/]+/,'');
+  const wsScheme=location.protocol==='https:'?'wss:':'ws:';
+  const wsUrl=`${wsScheme}//${location.host}/ws/cdp/${sbx.sandboxId}${origPath.startsWith('/')?origPath:'/devtools/page/'+(page.id||'')}`;
+  const sess=new CDPSession();
+  await sess.connect(wsUrl);
+  await sess.send('Page.enable');
+  await sess.send('Runtime.enable');
   S.cdp=sess;S.cdpHost=host;
 }
 async function ensureBrowser(manual){if(S.cdp)return S.cdp;if(!S.browserSbx)await createBrowser();await cdpAttach(S.browserSbx);if(manual)toast('chrome attached ✔','ok');return S.cdp;}
@@ -796,7 +799,7 @@ async function agentLogin(url,user,pass,mode){
   if(passIdx<0){const shot=await safeBrowserShot();chatMsg('agent','No password field found:',shot);return;}
   if(userIdx>=0&&user){await cdpEval('('+fillField.toString()+')('+userIdx+','+JSON.stringify(user)+')');await sleep(350);}
   await cdpEval('('+fillField.toString()+')('+passIdx+','+JSON.stringify(pass)+')');await sleep(350);
-  const clicked=await cdpEval('('+clickButton.toString()+')('+JSON.stringify(mode==='signup'?'sign up|create|register|submit|continue':'log ?in|sign in|submit|continue|next')+')');
+  const clicked=await cdpEval('('+clickButton.toString()+')('+JSON.stringify(mode==='signup'?'sign up|create|register|submit|continue|login|next|sign in':'log ?in|sign in|submit|continue|next|login')+')');
   await sleep(3200);let info={url:'?',title:'?'};try{info=await cdpEval('({url:location.href,title:document.title})');}catch(e){}
   const shot=await safeBrowserShot();
   chatMsg('agent',(mode==='signup'?'Signup':'Login')+' finished'+(clicked?(' — pressed "'+clicked+'"'):'')+'. Now on '+info.url+'.',shot);
@@ -831,20 +834,27 @@ function quick(t){$('#chatInput').value=t;sendChat();}
 $('#chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
 $('#sendBtn').addEventListener('click',sendChat);
 
-const QUICKS=[['🔎 search AI news','Search for the latest AI agent news'],['🌐 hacker news','Open https://news.ycombinator.com'],['📸 screenshot','Take a screenshot'],['💻 sys info','terminal: uname -a && nproc && df -h /'],['📦 install test','install cowsay then run cowsay hello'],['🔑 log in…','__login']];
+const QUICKS=[['🔎 search AI news','Search for the latest AI agent news'],['🌐 hacker news','Open https://news.ycombinator.com'],['📧 mailbox.org','Open https://mail.mailbox.org'],['📬 read inbox','Read my inbox'],['📸 screenshot','Take a screenshot'],['💻 sys info','terminal: uname -a && nproc && df -h /'],['🔑 log in…','__login']];
 $('#quickChips').innerHTML=QUICKS.map((q,i)=>'<span class="qchip" data-q="'+i+'">'+q[0]+'</span>').join('');
 $$('#quickChips .qchip').forEach(el=>el.addEventListener('click',()=>{const q=QUICKS[+el.dataset.q];if(q[1]==='__login')openLoginModal();else quick(q[1]);}));
 
-const HELP_TEXT='I can:\n🌐 "search for X" · "open example.com"\n🔑 "log in to example.com" (opens login form)\n🖥 "click 500 300" · "type hello" · "press enter" · "scroll down"\n⌨ "terminal: <cmd>" · "install cowsay"\n🐍 "run python: print(1+1)"\n\nToggle 🧠 for Gemini multi-step planning.';
+const HELP_TEXT='I can:\n🌐 "search for X" · "open example.com"\n📧 "log in to mailbox.org" (login form) → "read my inbox" → "open the email about X"\n🖥 "click 500 300" · "type hello" · "press enter" · "scroll down"\n⌨ "terminal: <cmd>" · "install cowsay"\n🐍 "run python: print(1+1)"\n\nToggle 🧠 for Gemini multi-step planning.';
 
 function rulePlan(text){
-  const t=text.trim();const low=t.toLowerCase();
+  const t=text.trim();const low=t.toLowerCase();let m;
   if(/help|what can you do|capabilities/.test(low))return{reply:HELP_TEXT};
   if(/^(hi|hello|hey|yo)\b/.test(low))return{reply:'Hi! Boot my computers, then give me a mission.'};
   if(/kill (all|everything)/.test(low))return{title:'kill all',steps:[{a:'kill_all'}]};
   if(/kill.*desktop/.test(low))return{title:'kill desktop',steps:[{a:'kill',target:'desk'}]};
   if(/kill.*(browser|chrome)/.test(low))return{title:'kill chrome',steps:[{a:'kill',target:'browser'}]};
-  let m;
+  /* ---- email / inbox commands ---- */
+  if(/read\s+(my\s+)?(inbox|email|mail)/i.test(t))return{title:'read inbox',steps:[{a:'read_inbox'}]};
+  if(/check\s+(my\s+)?(inbox|email|mail)/i.test(t))return{title:'read inbox',steps:[{a:'read_inbox'}]};
+  if(/open (?:the )?(?:email|mail) (?:about|titled|from|with subject)\s+(.+)/i.test(t)){const m2=t.match(/open (?:the )?(?:email|mail) (?:about|titled|from|with subject)\s+(.+)/i);return{title:'open email',steps:[{a:'open_email',subject:m2[1].trim()}]};}
+  if(/^open (?:email|mail) (\d+)$/i.test(t)){const m2=t.match(/^open (?:email|mail) (\d+)$/i);return{title:'open email #'+m2[1],steps:[{a:'open_email_by_index',index:+m2[1]}]};}
+  if(/(scan|refresh)\s+(my\s+)?(inbox|email|mail)/i.test(t))return{title:'scan inbox',steps:[{a:'browser_scan'}]};
+  if(/mailbox\.org|mail\.mailbox/i.test(t)&&!/login|sign|log/i.test(t))return{title:'open mailbox',steps:[{a:'browser_open',url:'https://mail.mailbox.org'}]};
+  /* ---- normal commands ---- */
   if((m=low.match(/(?:^|\b)(?:search|google|look up|find)\s+(?:for\s+)?(.+)$/)))return{title:'search',steps:[{a:'search',query:t.replace(/^(?:search|google|look up|find)\s+(for\s+)?/i,'').trim()}]};
   if((m=t.match(/(?:log ?in|sign ?in)\s+(?:to\s+|into\s+|on\s+)?(\S+)\s+(?:with|using)\s+["']?([^"'\s]+)["']?\s+(?:and\s+)?(?:password|pass|pwd)[:\s]+["']?([^"'\s]+)["']?/i)))return{title:'login',steps:[{a:'login',url:m[1],user:m[2],pass:m[3]}]};
   if(/(?:log ?in|sign ?in)\s+(?:to\s+|into\s+|on\s+)?(\S+)/i.test(t)){const u=t.match(/(?:log ?in|sign ?in)\s+(?:to\s+|into\s+|on\s+)?(\S+)/i)[1];return{reply:'Opening login form for '+u+'.',ui:'login',url:u};}
@@ -873,7 +883,7 @@ async function geminiPlan(text){
     if(S.cdp){const r=await S.cdp.send('Page.captureScreenshot',{format:'png'});screenshotBase64=r.data;}
     else if(S.desk){const shot=await S.desk.screenshot();let bin='';for(let i=0;i<shot.length;i+=0x8000){bin+=String.fromCharCode.apply(null,shot.subarray(i,i+0x8000));}screenshotBase64=btoa(bin);}
   }catch(e){}
-  const SYS='You are NEXUS, an AI agent with sandbox computers. Reply ONLY with valid JSON. For tasks return {"title":string,"steps":[...]} using ONLY: {"a":"search","query"} {"a":"browser_open","url"} {"a":"browser_scan"} {"a":"browser_fill","index","value"} {"a":"browser_click","filter"} {"a":"browser_js","expr"} {"a":"login","url","user","pass"} {"a":"signup","url","user","pass"} {"a":"desktop_click","x","y"} {"a":"desktop_type","text"} {"a":"desktop_press","key"} {"a":"desktop_scroll","dir","amount"} {"a":"screenshot"} {"a":"shell","command"} {"a":"code","language","code"} {"a":"install","pkg"} {"a":"wait","ms"} {"a":"say","text"} {"a":"kill_all"}. For chit-chat return {"reply":string}. Never invent credentials. Keep plans 1-6 steps.';
+  const SYS='You are NEXUS, an AI agent with sandbox computers (Linux desktop, Chrome browser). Reply ONLY with valid JSON. For tasks return {"title":string,"steps":[...]} using ONLY these actions: {"a":"search","query"} · {"a":"browser_open","url"} · {"a":"browser_scan"} · {"a":"browser_fill","index":number,"value":string} · {"a":"browser_click","filter":string} · {"a":"browser_js","expr":string} · {"a":"login","url","user","pass"} · {"a":"signup","url","user","pass"} · {"a":"read_inbox"} (screenshot + read emails via Gemini vision) · {"a":"open_email","subject":string} · {"a":"open_email_by_index","index":number} · {"a":"desktop_click","x","y"} · {"a":"desktop_type","text"} · {"a":"desktop_press","key"} · {"a":"desktop_scroll","dir":"up"|"down","amount"} · {"a":"screenshot"} · {"a":"shell","command"} · {"a":"code","language","code"} · {"a":"install","pkg"} · {"a":"wait","ms"} · {"a":"say","text"} · {"a":"kill_all"}. For chit-chat or questions, return {"reply":string}. Never invent credentials — if a login needs credentials you don\'t have, return {"reply":"please tell me the credentials"}. Keep plans 1-6 steps. For webmail tasks, use read_inbox and open_email actions.';
   const build=withSys=>{
     const parts=[{text}];
     if(screenshotBase64)parts.unshift({inlineData:{mimeType:'image/png',data:screenshotBase64}});
@@ -916,7 +926,7 @@ async function sendChat(){
 
 async function shellSbxAuto(){if(S.desk)return S.desk;if(!S.base)await createBase();return S.base;}
 async function execStep(st,i,n){
-  const L={search:'🔎 searching',browser_open:'🌐 opening',browser_scan:'🔍 scanning',browser_fill:'⌨ filling',browser_click:'🖱 clicking',browser_js:'⚡ evaluating',login:'🔐 login',signup:'📝 signup',desktop_click:'🖱 clicking',desktop_type:'⌨ typing',desktop_press:'⌨ pressing',desktop_scroll:'🌀 scrolling',screenshot:'📸 screenshot',shell:'⌨ shell',code:'🧪 code',install:'📦 installing',wait:'⏳ waiting',say:'💬',kill:'💀 killing',kill_all:'💀 killing all',run_app:'🚀 launching'};
+  const L={search:'🔎 searching',browser_open:'🌐 opening',browser_scan:'🔍 scanning',browser_fill:'⌨ filling',browser_click:'🖱 clicking',browser_js:'⚡ evaluating',login:'🔐 login',signup:'📝 signup',desktop_click:'🖱 clicking',desktop_type:'⌨ typing',desktop_press:'⌨ pressing',desktop_scroll:'🌀 scrolling',screenshot:'📸 screenshot',shell:'⌨ shell',code:'🧪 code',install:'📦 installing',wait:'⏳ waiting',say:'💬',kill:'💀 killing',kill_all:'💀 killing all',run_app:'🚀 launching',read_inbox:'📬 reading inbox',open_email:'📨 opening email',open_email_by_index:'📨 opening email'};
   stepNow((L[st.a]||('▶ '+st.a))+' '+i+'/'+n+' …');
   switch(st.a){
     case 'say':chatMsg('agent',st.text||'');break;
@@ -930,6 +940,49 @@ async function execStep(st,i,n){
     case 'login':case 'signup':{
       if(!st.user||!st.pass){chatMsg('agent','Need credentials — opening login form.');openLoginModal();if(st.url)$('#lmUrl').value=st.url;if(st.a==='signup')$('#lmMode').value='signup';break;}
       await agentLogin(st.url,st.user,st.pass,st.a);break;}
+    case 'read_inbox':{
+      await ensureBrowser();
+      const shot=await safeBrowserShot();
+      if(!shot){chatMsg('agent','Could not capture the page. Open the webmail first ("open mailbox.org"), log in via the login mission, then run this again.');break;}
+      const dataB64=shot.split(',')[1];
+      try{
+        const j=await geminiPost('models/'+encodeURIComponent(S.geminiModel||'gemini-2.5-flash')+':generateContent',{
+          contents:[{role:'user',parts:[
+            {inlineData:{mimeType:'image/png',data:dataB64}},
+            {text:'You are looking at a webmail inbox. List every visible email with: sender, subject, and a one-line preview of the content. If the page is NOT an email inbox (e.g. login screen, loading, error), describe what you actually see instead. Reply in plain text, no JSON.'}
+          ]}],
+          generationConfig:{temperature:0.2,maxOutputTokens:2000}
+        });
+        const txt=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts&&j.candidates[0].content.parts[0].text)||'(empty response)';
+        chatMsg('agent','Here is what I see:',shot,txt.slice(0,2500));
+      }catch(e){chatMsg('agent','Vision failed ('+e.message+'), here is the screenshot:',shot);}
+      break;
+    }
+    case 'open_email':{
+      await ensureBrowser();
+      const subject=st.subject||'';
+      const escFilter=subject.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      const clicked=await cdpEval('('+clickButton.toString()+')('+JSON.stringify(escFilter)+')').catch(()=>null);
+      if(!clicked){
+        await cdpEval('(()=>{const cells=[...document.querySelectorAll("td, span, div")].filter(el=>el.innerText&&el.innerText.includes('+JSON.stringify(subject)+'));if(cells.length){cells[0].closest("tr")?.click()||cells[0].click();return "clicked by text match";}return null;})()').catch(()=>null);
+      }
+      await sleep(2500);
+      const shot=await safeBrowserShot();
+      const body=await cdpEval('document.body.innerText').catch(()=>'');
+      const clean=(body||'').replace(/\s+/g,' ').slice(0,2500);
+      chatMsg('agent','Opened email.'+(clicked?' Clicked "'+clicked+'".':''),shot,clean||'(page text unavailable)');
+      break;
+    }
+    case 'open_email_by_index':{
+      await ensureBrowser();
+      const idx=(st.index||1)-1;
+      await cdpEval('(()=>{const rows=[...document.querySelectorAll("tr, [class*=mail], [class*=message]")].filter(el=>el.getBoundingClientRect().height>20);if(rows['+idx+']){rows['+idx+'].click();return "clicked row "+idx+1;}return null;})()').catch(()=>null);
+      await sleep(2500);
+      const shot=await safeBrowserShot();
+      const body=await cdpEval('document.body.innerText').catch(()=>'');
+      chatMsg('agent','Opened email #'+st.index+':',shot,(body||'').replace(/\s+/g,' ').slice(0,2500));
+      break;
+    }
     case 'desktop_click':{if(!S.desk)await createDesktop();await S.desk.leftClick(st.x,st.y);break;}
     case 'desktop_type':{if(!S.desk)await createDesktop();await S.desk.write(st.text||'');break;}
     case 'desktop_press':{if(!S.desk)await createDesktop();await S.desk.press((st.key||'enter').split('+'));break;}
