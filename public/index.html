@@ -28,8 +28,6 @@ button{cursor:pointer}
 a{color:var(--accent-2);text-decoration:none}
 .mono{font-family:var(--mono)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;font-size:12.5px;font-weight:500;border-radius:var(--r-sm);transition:all .15s;white-space:nowrap}
-.btn-ghost{background:transparent;color:var(--tx-2)}
-.btn-ghost:hover{background:#ffffff0a;color:var(--tx)}
 .btn-secondary{background:#1e1e22;color:var(--tx);border:1px solid var(--border)}
 .btn-secondary:hover{background:#252529;border-color:var(--border-2)}
 .btn-primary{background:var(--accent);color:#0a0a0b;font-weight:600}
@@ -100,7 +98,6 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
 .chip.on .dot{background:var(--accent)}
 .computer-grid{display:grid;gap:8px;margin-bottom:12px}
 .comp-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:12px;transition:border .15s}
-.comp-card:hover{border-color:var(--border-2)}
 .comp-card.on{border-color:rgba(198,255,61,.3);background:rgba(198,255,61,.02)}
 .comp-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
 .comp-head .icon{width:20px;height:20px;display:grid;place-items:center;font-size:12px}
@@ -148,7 +145,6 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
 .computer-head .mode{color:var(--tx-2)}
 .computer-head .spacer{flex:1}
 .computer-head .mbtn{padding:4px 9px;border:1px solid #33333a;background:rgba(0,0,0,.5);border-radius:6px;color:var(--tx-2);font-family:var(--mono);font-size:10px}
-.computer-head .mbtn:hover{color:var(--tx);background:rgba(255,255,255,.05)}
 .computer-head .mbtn.act{color:var(--accent-2);border-color:rgba(198,255,61,.4)}
 .computer-view{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .computer-view iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -156,7 +152,7 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
 .computer-idle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(800px 400px at 50% 40%,#15151a,#000)}
 .computer-idle .big{font-size:48px;color:#2a2a2e;font-family:var(--mono);font-weight:700}
 .computer-idle .txt{font-size:12px;color:var(--tx-3);font-family:var(--mono);letter-spacing:.15em;text-transform:uppercase}
-.computer-idle .hint{font-size:12px;color:var(--tx-3);max-width:320px;text-align:center;line-height:1.55}
+.computer-idle .hint{font-size:12px;color:var(--tx-3);max-width:320px;text-align:center;line-height:1.55;padding:0 16px}
 .scanlines{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 3px);mix-blend-mode:overlay;z-index:3}
 .card{background:var(--panel-solid);border:1px solid var(--border);border-radius:var(--r);padding:16px}
 .card h4{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--tx-2);text-transform:uppercase;margin-bottom:12px}
@@ -180,6 +176,23 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
 .modal h3{font-size:15px;font-weight:600;margin-bottom:4px}
 .modal .sub{color:var(--tx-3);font-size:12px;margin-bottom:16px;line-height:1.55}
 .modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+
+/* ============ MOBILE / RESPONSIVE ============ */
+@media(max-width:900px){
+  #app{grid-template-columns:1fr;grid-template-rows:56px minmax(220px,36vh) minmax(0,1fr)}
+  .main{grid-row:2;grid-column:1}
+  .sidebar{grid-row:3;grid-column:1;border-right:0;border-top:1px solid var(--border)}
+  #chipShell{display:none}
+  .tb-brand span{display:none}
+  .topbar{padding:0 12px;gap:8px}
+  .gate{padding:24px 20px}
+  .computer-head{padding:8px 10px;gap:6px}
+  .computer-head .mbtn{padding:4px 7px}
+}
+@media(max-width:480px){
+  #chipBrowser{display:none}
+  .tb-status .badge{font-size:9.5px;padding:3px 8px}
+}
 </style>
 </head>
 <body>
@@ -205,9 +218,7 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
     </div>
     <div id="bootLog"></div>
     <div id="gateErr"></div>
-    <div class="gate-actions">
-      <button class="btn btn-primary" id="connectBtn">Connect ▸</button>
-    </div>
+    <div class="gate-actions"><button class="btn btn-primary" id="connectBtn">Connect ▸</button></div>
     <div class="gate-foot">🔒 Keys stay <b>in your browser</b> and are forwarded per-request through your own server.</div>
   </div>
 </div>
@@ -404,18 +415,19 @@ textarea.inp{resize:vertical;min-height:60px;line-height:1.5}
 <div class="toast-wrap" id="toasts"></div>
 
 <script type="module">
-/* AGENT//DECK v2.2 — every handler attached via addEventListener,
-   every failure visible, every request timed out. */
-const APP_VERSION='2.2';
+/* AGENT//DECK v2.3 */
+const APP_VERSION='2.3';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-/* visible crash reporting — nothing fails silently ever again */
 window.addEventListener('error',e=>{const b=$('#fatalBar');b.style.display='block';b.textContent='JS ERROR: '+e.message;});
 window.addEventListener('unhandledrejection',e=>{const b=$('#fatalBar');b.style.display='block';b.textContent='ASYNC ERROR: '+(e.reason&&e.reason.message?e.reason.message:e.reason);});
 
-function fetchT(url,opts={},ms=25000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);return fetch(url,Object.assign({},opts,{signal:c.signal})).finally(()=>clearTimeout(t));}
+function fetchT(url,opts={},ms=30000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);return fetch(url,Object.assign({},opts,{signal:c.signal})).finally(()=>clearTimeout(t));}
+function b64txt(s){try{const bin=atob(s);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder().decode(u);}catch(e){return s;}}
+function b64bytes(s){const bin=atob(s.replace(/^data:[^;]+;base64,/,''));const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u;}
+function txt2b64(s){return btoa(unescape(encodeURIComponent(s)));}
 
 const LS={novitaKey:'ad.nk',geminiKey:'ad.gk',geminiModel:'ad.gm',geminiModels:'ad.gms',cfg:'ad.cfg',llm:'ad.llm'};
 const S={apiKey:'',geminiKey:'',geminiModel:'gemini-2.5-flash',domain:'us-phx-1.sandbox.novita.ai',timeoutMs:900000,
@@ -430,22 +442,41 @@ function chatMsg(who,text,img,out){const log=$('#chatLog');const m=document.crea
 let typingEl=null;
 function typing(on){if(on&&!typingEl){typingEl=document.createElement('div');typingEl.className='msg agent';typingEl.innerHTML='<div class="bub typing"><i></i><i></i><i></i></div>';$('#chatLog').appendChild(typingEl);$('#chatLog').scrollTop=1e9;}else if(!on&&typingEl){typingEl.remove();typingEl=null;}}
 
-/* ---------- Novita REST client (through our own proxy) ---------- */
+/* ================= connect-rpc (envd) envelope codec ================= */
+function envMsg(obj){const p=new TextEncoder().encode(JSON.stringify(obj));const o=new Uint8Array(5+p.length);o[0]=0;new DataView(o.buffer).setUint32(1,p.length,false);o.set(p,5);return o;}
+function envEnd(){const p=new TextEncoder().encode('{}');const o=new Uint8Array(5+p.length);o[0]=2;new DataView(o.buffer).setUint32(1,p.length,false);o.set(p,5);return o;}
+function concatBytes(a,b){const o=new Uint8Array(a.length+b.length);o.set(a,0);o.set(b,a.length);return o;}
+function parseConnectStream(ab){
+  const u8=new Uint8Array(ab);
+  const dv=new DataView(ab instanceof ArrayBuffer?ab:ab.buffer,(ab instanceof ArrayBuffer?0:ab.byteOffset),ab.byteLength);
+  const out=[];let off=0;
+  while(off+5<=u8.length){
+    const flags=u8[off];const len=dv.getUint32(off+1,false);off+=5;
+    const chunk=u8.slice(off,off+len);off+=len;
+    try{
+      const j=JSON.parse(new TextDecoder().decode(chunk));
+      if(flags&2)out.push({__end:true,endMeta:j});else out.push(j);
+    }catch(e){}
+  }
+  return out;
+}
+
+/* ================= Novita client ================= */
 class NovitaClient{
   constructor(apiKey,domain){this.apiKey=apiKey;this.domain=domain;
     this.sandbox={
-      list:()=>this._get('/sandboxes'),
-      create:(tpl,opts={})=>this._post('/sandboxes',Object.assign({template:tpl},opts)),
+      list:async()=>{const r=await this._get('/sandboxes');return Array.isArray(r)?r:(r&&r.items)||[];},
+      create:(tpl,opts={})=>this._post('/sandboxes',Object.assign({templateID:tpl},opts)),
       kill:(id)=>this._del('/sandboxes/'+id),
       getInfo:(id)=>this._get('/sandboxes/'+id),
-      setTimeout:(id,ms)=>this._post('/sandboxes/'+id+'/timeout',{timeoutMs:ms})
+      setTimeout:(id,sec)=>this._post('/sandboxes/'+id+'/timeout',{timeout:sec})
     };
     this.desktop={create:(opts={})=>this._create('desktop',opts,true)};
   }
   async _req(method,path,body){
     const opts={method,headers:{'Content-Type':'application/json','X-Novita-Key':this.apiKey,'X-Novita-Domain':this.domain}};
     if(body)opts.body=JSON.stringify(body);
-    const r=await fetchT('/api/novita'+path,opts);
+    const r=await fetchT('/api/novita'+path,opts,60000);
     const t=await r.text();let j=null;try{j=JSON.parse(t);}catch(e){}
     if(!r.ok)throw new Error((j&&(j.error||j.message))||('HTTP '+r.status+': '+t.slice(0,200)));
     return j;
@@ -454,28 +485,30 @@ class NovitaClient{
   _post(p,b){return this._req('POST',p,b);}
   _del(p){return this._req('DELETE',p);}
   async _create(template,opts,isDesktop){
-    const info=await this.sandbox.create(template,{timeoutMs:opts.timeoutMs||900000,metadata:opts.metadata||{}});
+    const info=await this.sandbox.create(template,{timeout:Math.round((opts.timeoutMs||900000)/1000),metadata:opts.metadata||{}});
     return new SandboxHandle(this,info,isDesktop);
   }
 }
+
 class SandboxHandle{
   constructor(client,info,isDesktop){
-    this.client=client;this.sandboxId=info.sandboxId||info.id;this.template=info.template||info.templateId;this.isDesktop=isDesktop;
-    this.commands={run:async(cmd,opts={})=>this.client._post('/sandboxes/'+this.sandboxId+'/commands',{command:cmd,timeoutMs:opts.timeoutMs||60000})};
+    this.client=client;this.sandboxId=info.sandboxId||info.id||info;this.template=info.template||info.templateID;this.isDesktop=isDesktop;
+    this.commands={run:(cmd,opts={})=>this.runCommand(cmd,opts)};
     this.files={
-      list:(p)=>this.client._get('/sandboxes/'+this.sandboxId+'/files?path='+encodeURIComponent(p)),
-      read:(p,o={})=>this.client._get('/sandboxes/'+this.sandboxId+'/files?path='+encodeURIComponent(p)+'&format='+(o.format||'text')),
-      write:(p,c)=>this.client._post('/sandboxes/'+this.sandboxId+'/files',{path:p,content:c}),
-      remove:(p)=>this.client._del('/sandboxes/'+this.sandboxId+'/files?path='+encodeURIComponent(p)),
-      makeDir:(p)=>this.commands.run('mkdir -p '+JSON.stringify(p))
+      list:async(p)=>{const r=await this.runCommand(`find ${JSON.stringify(p)} -maxdepth 1 -printf '%y %s %f\\n' 2>/dev/null | tail -n +2`);
+        return (r.stdout||'').split('\n').filter(Boolean).map(l=>{const parts=l.split(' ');const t=parts[0],sz=parts[1],name=parts.slice(2).join(' ');return{name,type:t==='d'?'dir':'file',size:+sz};});},
+      read:async(p)=>{const r=await this.runCommand('cat '+JSON.stringify(p));if((r.exitCode??0)!==0)throw new Error('read failed: '+(r.stderr||''));return r.stdout||'';},
+      write:async(p,c)=>{const b=txt2b64(c);const r=await this.runCommand(`echo ${b} | base64 -d > ${JSON.stringify(p)}`);if((r.exitCode??0)!==0)throw new Error('write failed: '+(r.stderr||''));},
+      remove:p=>this.runCommand('rm -rf '+JSON.stringify(p)),
+      makeDir:p=>this.runCommand('mkdir -p '+JSON.stringify(p))
     };
     if(isDesktop){
       this.stream={
         start:async()=>{
-          await this.commands.run('which x11vnc || (apt-get update -qq && apt-get install -y -qq x11vnc novnc websockify)',{timeoutMs:120000}).catch(()=>{});
-          await this.commands.run('pkill -f x11vnc; pkill -f novnc_proxy').catch(()=>{});
-          await this.commands.run('x11vnc -bg -display :0 -forever -shared -nopw -rfbport 5900').catch(()=>{});
-          await this.commands.run('cd /opt/noVNC && /opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 6080 --web /opt/noVNC &',{timeoutMs:5000}).catch(()=>{});
+          await this.runCommand('which x11vnc || (apt-get update -qq && apt-get install -y -qq x11vnc novnc websockify)',{timeoutMs:180000}).catch(()=>{});
+          await this.runCommand('pkill -f x11vnc; pkill -f novnc_proxy').catch(()=>{});
+          await this.runCommand('x11vnc -bg -display :0 -forever -shared -nopw -rfbport 5900').catch(()=>{});
+          await this.runCommand('nohup /opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 6080 --web /opt/noVNC >/tmp/novnc.log 2>&1 &',{timeoutMs:8000}).catch(()=>{});
           await sleep(2000);
         },
         getUrl:()=>('https://'+this.getHost(6080)+'/vnc.html?autoconnect=true&resize=scale')
@@ -483,23 +516,43 @@ class SandboxHandle{
     }
   }
   getHost(port){return port+'-'+this.sandboxId+'.'+this.client.domain;}
-  async screenshot(){
-    if(!this.isDesktop)return new Uint8Array();
-    await this.commands.run('which scrot || apt-get install -y -qq scrot').catch(()=>{});
-    const path='/tmp/shot-'+Date.now()+'.png';
-    await this.commands.run('DISPLAY=:0 scrot --pointer '+path);
-    const b64=await this.client._get('/sandboxes/'+this.sandboxId+'/files?path='+encodeURIComponent(path)+'&format=base64');
-    this.files.remove(path).catch(()=>{});
-    const data=(typeof b64==='string')?b64:(b64.content||b64.data||'');
-    const bin=atob(data.replace(/^data:[^;]+;base64,/,''));
-    const u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
-    return u8;
+  async _rpc(method,bodyBytes,timeoutMs){
+    const r=await fetchT(`/api/envd/49983/${this.sandboxId}/${method}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/connect+json','Connect-Protocol-Version':'1','Authorization':'Basic dXNlcjo=','X-Novita-Domain':this.client.domain},
+      body:bodyBytes
+    },timeoutMs||120000);
+    const ab=await r.arrayBuffer();
+    if(!r.ok){let m='envd HTTP '+r.status;try{const j=JSON.parse(new TextDecoder().decode(ab));m=j.error||m;}catch(e){}throw new Error(m);}
+    return parseConnectStream(ab);
   }
-  async leftClick(x,y){await this.commands.run('DISPLAY=:0 xdotool mousemove --sync '+x+' '+y+' && xdotool click 1');}
-  async scroll(d='down',n=1){await this.commands.run('DISPLAY=:0 xdotool click --repeat '+n+' '+(d==='up'?'4':'5'));}
-  async write(t){const q=JSON.stringify(t).slice(1,-1).replace(/'/g,"\\'");await this.commands.run("DISPLAY=:0 xdotool type --delay 30 '"+q+"'");}
-  async press(k){await this.commands.run('DISPLAY=:0 xdotool key '+(Array.isArray(k)?k.join('+'):k));}
-  async open(a){await this.commands.run('DISPLAY=:0 xdg-open '+JSON.stringify(a),{timeoutMs:5000}).catch(()=>{});}
+  async runCommand(cmd,opts={}){
+    const tm=opts.timeoutMs||60000;
+    const build=args=>concatBytes(envMsg({process:{args,envs:opts.envs||{},cwd:opts.cwd||'/home/user'}}),envEnd());
+    let events=await this._rpc('process.Process/Start',build(['/bin/bash','-l','-c',cmd]),tm);
+    let end=events.find(e=>e.event&&e.event.end);
+    if(end&&end.event.end.exitCode===127){events=await this._rpc('process.Process/Start',build(['/bin/sh','-c',cmd]),tm);}
+    let stdout='',stderr='',exitCode=0;
+    for(const ev of events){
+      const e=ev.event;if(!e)continue;
+      if(e.start){/*pid*/}
+      else if(e.data){if(e.data.stdout)stdout+=b64txt(e.data.stdout);if(e.data.stderr)stderr+=b64txt(e.data.stderr);}
+      else if(e.end){exitCode=e.end.exitCode??0;}
+    }
+    return{stdout,stderr,exitCode};
+  }
+  async screenshot(){
+    const path='/tmp/shot-'+Date.now()+'.png';
+    const r=await this.runCommand(`which scrot || apt-get install -y -qq scrot; DISPLAY=:0 scrot --pointer ${path} && base64 -w0 ${path} && rm -f ${path}`,{timeoutMs:90000});
+    const b64=(r.stdout||'').trim();
+    if(!b64)throw new Error('screenshot failed: '+(r.stderr||'no output'));
+    return b64bytes(b64);
+  }
+  async leftClick(x,y){await this.runCommand(`DISPLAY=:0 xdotool mousemove --sync ${x} ${y} && DISPLAY=:0 xdotool click 1`);}
+  async scroll(d='down',n=1){await this.runCommand(`DISPLAY=:0 xdotool click --repeat ${n} ${d==='up'?'4':'5'}`);}
+  async write(t){const q=JSON.stringify(t).slice(1,-1).replace(/'/g,"'\\''");await this.runCommand(`DISPLAY=:0 xdotool type --delay 30 '${q}'`);}
+  async press(k){await this.runCommand('DISPLAY=:0 xdotool key '+(Array.isArray(k)?k.join('+'):k));}
+  async open(a){await this.runCommand('DISPLAY=:0 nohup xdg-open '+JSON.stringify(a)+' >/dev/null 2>&1 &',{timeoutMs:8000}).catch(()=>{});}
   async kill(){try{await this.client.sandbox.kill(this.sandboxId);}catch(e){}}
 }
 
@@ -508,6 +561,8 @@ $('#keyInp').value=localStorage.getItem(LS.novitaKey)||'';
 $('#geminiInp').value=localStorage.getItem(LS.geminiKey)||'';
 try{const c=JSON.parse(localStorage.getItem(LS.cfg)||'{}');if(c.domain)S.domain=c.domain;if(c.timeoutMs)S.timeoutMs=c.timeoutMs;}catch(e){}
 
+function gErrMsg(j,status){const e=j&&j.error;return e?(typeof e==='string'?e:(e.message||JSON.stringify(e))):('HTTP '+status);}
+
 async function connect(){
   const novitaKey=$('#keyInp').value.trim();
   const geminiKey=$('#geminiInp').value.trim();
@@ -515,35 +570,31 @@ async function connect(){
   if(!novitaKey){errEl.textContent='paste your Novita API key';errEl.style.display='block';return;}
   const btn=$('#connectBtn');btn.disabled=true;btn.innerHTML='<span class="spin"></span> connecting…';
   try{
-    boot('→ checking backend /api/health …');
+    boot('→ checking backend …');
     let hr=null;try{hr=await fetchT('/api/health',{},10000);}catch(e){}
-    if(!hr||!hr.ok)throw new Error('backend unreachable (is server.js deployed & Live on Render?)');
+    if(!hr||!hr.ok)throw new Error('backend unreachable');
     const hj=await hr.json().catch(()=>({}));
-    boot('✓ backend ok (server '+ (hj.v||'?') +')','ok');
-    if(hj.v&&hj.v!==APP_VERSION)boot('⚠ server v'+hj.v+' vs page v'+APP_VERSION+' — redeploy both files!','err');
-    $('#gateVer').textContent='v'+APP_VERSION;
+    boot('✓ backend ok (server '+(hj.v||'?')+')','ok');
     boot('→ validating Novita key …');
     S.NOV=new NovitaClient(novitaKey,S.domain);
     const list=await S.NOV.sandbox.list();
-    boot('✓ novita ok — '+((Array.isArray(list))?list.length:0)+' sandbox(es) running','ok');
+    boot('✓ novita ok — '+(list.length||0)+' sandbox(es)','ok');
     S.apiKey=novitaKey;
     if(geminiKey){S.geminiKey=geminiKey;localStorage.setItem(LS.geminiKey,geminiKey);}
     localStorage.setItem(LS.novitaKey,novitaKey);
     localStorage.setItem(LS.cfg,JSON.stringify({domain:S.domain,timeoutMs:S.timeoutMs}));
-    boot('✓ connected — launching deck','ok');
-    await sleep(300);
+    boot('✓ connected','ok');
+    await sleep(250);
     $('#gate').classList.add('off');$('#app').classList.add('on');
     toast('connected ✔','ok');
-    try{populateSettingsFromLS();}catch(e){console.error(e);}
-    try{updateBadges();}catch(e){console.error(e);}
+    try{populateSettingsFromLS();}catch(e){}
+    try{updateBadges();}catch(e){}
     chatMsg('sys','connected as '+novitaKey.slice(0,8)+'…');
-    if(geminiKey){chatMsg('agent','Gemini brain online. Order me around — "search for AI agent news", "open hacker news", or use the login mission.');fetchModels(true).catch(()=>{});}
-    else chatMsg('agent','No Gemini key — rule-based planner active. Add a key in ⚙ for smart planning.');
+    if(geminiKey){chatMsg('agent','Gemini brain online. Try "search for AI agent news", "open hacker news", or the login mission.');fetchModels(true).catch(()=>{});}
+    else chatMsg('agent','No Gemini key — rule-based planner active. Add a key in ⚙.');
   }catch(e){
     console.error(e);
-    let msg=(e&&e.message)?e.message:String(e);
-    if(e&&e.name==='AbortError')msg='request timed out — server too slow or down';
-    if(/401|Unauthorized/i.test(msg))msg='Novita rejected the key (401). Check it at novita.ai.';
+    const msg=(e&&e.message)?e.message:String(e);
     boot('✗ '+msg,'err');
     errEl.textContent=msg;errEl.style.display='block';
   }finally{btn.disabled=false;btn.innerHTML='Connect ▸';}
@@ -551,7 +602,6 @@ async function connect(){
 $('#connectBtn').addEventListener('click',connect);
 $('#keyInp').addEventListener('keydown',e=>{if(e.key==='Enter')connect();});
 $('#geminiInp').addEventListener('keydown',e=>{if(e.key==='Enter')connect();});
-
 function disconnect(){killAll(true).finally(()=>{Object.values(LS).forEach(k=>localStorage.removeItem(k));location.reload();});}
 $('#disconnectBtn').addEventListener('click',disconnect);
 $('#stDisconnect').addEventListener('click',disconnect);
@@ -567,15 +617,15 @@ function populateSettingsFromLS(){
 $('#stSaveNov').addEventListener('click',async()=>{
   const k=$('#st_novitaKey').value.trim(),d=$('#st_domain').value.trim()||'us-phx-1.sandbox.novita.ai',t=parseInt($('#st_timeout').value)||900000;
   if(!k)return toast('need a key','err');
-  try{const c=new NovitaClient(k,d);const l=await c.sandbox.list();S.apiKey=k;S.domain=d;S.timeoutMs=t;S.NOV=c;localStorage.setItem(LS.novitaKey,k);localStorage.setItem(LS.cfg,JSON.stringify({domain:d,timeoutMs:t}));$('#st_novitaStatus').textContent='✔ validated';$('#st_novitaStatus').className='statusline ok';toast('saved ✔','ok');}
+  try{const c=new NovitaClient(k,d);await c.sandbox.list();S.apiKey=k;S.domain=d;S.timeoutMs=t;S.NOV=c;localStorage.setItem(LS.novitaKey,k);localStorage.setItem(LS.cfg,JSON.stringify({domain:d,timeoutMs:t}));$('#st_novitaStatus').textContent='✔ validated';$('#st_novitaStatus').className='statusline ok';toast('saved ✔','ok');}
   catch(e){$('#st_novitaStatus').textContent='✖ '+e.message;$('#st_novitaStatus').className='statusline err';toast(e.message,'err');}
 });
-$('#stTestNov').addEventListener('click',async()=>{try{const l=await S.NOV.sandbox.list();$('#st_novitaStatus').textContent='✔ '+(Array.isArray(l)?l.length:0)+' sandbox(es)';$('#st_novitaStatus').className='statusline ok';}catch(e){$('#st_novitaStatus').textContent='✖ '+e.message;$('#st_novitaStatus').className='statusline err';}});
+$('#stTestNov').addEventListener('click',async()=>{try{const l=await S.NOV.sandbox.list();$('#st_novitaStatus').textContent='✔ '+l.length+' sandbox(es)';$('#st_novitaStatus').className='statusline ok';}catch(e){$('#st_novitaStatus').textContent='✖ '+e.message;$('#st_novitaStatus').className='statusline err';}});
 
 async function geminiPost(path,body){
-  const r=await fetchT('/api/gemini/'+path,{method:'POST',headers:{'Content-Type':'application/json','X-Gemini-Key':S.geminiKey},body:JSON.stringify(body||{})});
+  const r=await fetchT('/api/gemini/'+path,{method:'POST',headers:{'Content-Type':'application/json','X-Gemini-Key':S.geminiKey},body:JSON.stringify(body||{})},60000);
   const t=await r.text();let j=null;try{j=JSON.parse(t);}catch(e){}
-  if(!r.ok)throw new Error((j&&(j.error||j.error&&j.error.message))||('HTTP '+r.status+': '+t.slice(0,150)));
+  if(!r.ok)throw new Error(gErrMsg(j,r.status));
   return j;
 }
 async function fetchModels(silent){
@@ -584,9 +634,9 @@ async function fetchModels(silent){
   try{
     const r=await fetchT('/api/gemini/models',{headers:{'X-Gemini-Key':k}});
     const j=await r.json();
-    if(!r.ok)throw new Error((j&&j.error)||('HTTP '+r.status));
+    if(!r.ok)throw new Error(gErrMsg(j,r.status));
     const models=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).filter(m=>/gemini/i.test(m.name))
-      .map(m=>({id:m.name.replace(/^models\//,''),display:m.displayName||m.name.replace(/^models\//,''),desc:m.description||''})).sort((a,b)=>a.id.localeCompare(b.id));
+      .map(m=>({id:m.name.replace(/^models\//,''),display:m.displayName||m.name.replace(/^models\//,'')})).sort((a,b)=>a.id.localeCompare(b.id));
     localStorage.setItem(LS.geminiModels,JSON.stringify(models));S.geminiKey=k;localStorage.setItem(LS.geminiKey,k);
     $('#st_modelInfo').textContent='found '+models.length+' models';
     restoreModelsDropdown();updateBadges();
@@ -626,7 +676,7 @@ $('#st_llmEnabled').addEventListener('change',()=>{$('#smartTog').checked=$('#st
 $('#smartTog').addEventListener('change',()=>{$('#st_llmEnabled').checked=$('#smartTog').checked;localStorage.setItem(LS.llm,$('#smartTog').checked?'1':'0');updateBadges();});
 $('#st_model').addEventListener('change',()=>{S.geminiModel=$('#st_model').value;localStorage.setItem(LS.geminiModel,S.geminiModel);updateBadges();});
 
-/* ---------- chips / badges (null-safe) ---------- */
+/* ---------- badges ---------- */
 function chipOn(id,on){const el=$(id);if(!el)return;el.classList.toggle('on',!!on);const t=el.querySelector('.txt');if(t&&el.id.includes('Mini'))t.textContent=on?'on':'off';}
 function updChips(){
   chipOn('#chipDesk',S.desk);chipOn('#chipBrowser',S.browserSbx);chipOn('#chipShell',S.base);
@@ -652,22 +702,20 @@ function meta(){return{app:'agent-deck'};}
 async function createDesktop(){
   stepNow('booting desktop…');
   const sbx=await S.NOV.desktop.create({timeoutMs:S.timeoutMs,metadata:meta()});
-  await sbx.commands.run('which Xvfb || (apt-get update -qq && apt-get install -y -qq xvfb xfce4 xdotool scrot)',{timeoutMs:180000}).catch(()=>{});
-  await sbx.commands.run('pkill -f Xvfb; Xvfb :0 -ac -screen 0 1280x800x24 -nolisten tcp & sleep 1; DISPLAY=:0 startxfce4 &',{timeoutMs:10000}).catch(()=>{});
+  await sbx.runCommand('which Xvfb || (apt-get update -qq && apt-get install -y -qq xvfb xfce4 xdotool scrot)',{timeoutMs:240000}).catch(()=>{});
+  await sbx.runCommand('pkill -f Xvfb; nohup Xvfb :0 -ac -screen 0 1280x800x24 -nolisten tcp >/tmp/xvfb.log 2>&1 & sleep 2; DISPLAY=:0 nohup startxfce4 >/tmp/xfce.log 2>&1 & sleep 2; echo desktop-ready',{timeoutMs:30000}).catch(()=>{});
   S.desk=sbx;updChips();toast('desktop online','ok');chatMsg('sys','🖥 desktop online → '+sbx.sandboxId);
   return sbx;
 }
 async function createBrowser(){
   stepNow('booting chrome…');
-  const info=await S.NOV.sandbox.create('browser-chromium',{timeoutMs:S.timeoutMs,metadata:meta()});
-  const sbx=new SandboxHandle(S.NOV,info,false);
+  const sbx=await S.NOV._create('browser-chromium',{timeoutMs:S.timeoutMs,metadata:meta()},false);
   S.browserSbx=sbx;updChips();toast('chrome online','ok');chatMsg('sys','🌐 chrome online → '+sbx.sandboxId);
   return sbx;
 }
 async function createBase(){
   stepNow('booting utility…');
-  const info=await S.NOV.sandbox.create('base',{timeoutMs:S.timeoutMs,metadata:meta()});
-  const sbx=new SandboxHandle(S.NOV,info,false);
+  const sbx=await S.NOV._create('base',{timeoutMs:S.timeoutMs,metadata:meta()},false);
   S.base=sbx;updChips();toast('utility online','ok');
   return sbx;
 }
@@ -687,8 +735,8 @@ function stopLive(){if(S.pollTimer){clearInterval(S.pollTimer);S.pollTimer=null;
 function setLiveImg(src){$('#liveIdle').style.display='none';$('#liveIframe').style.display='none';const im=$('#liveImg');im.style.display='block';im.src=src;$('#liveRec').style.display='flex';$('#liveModeLbl').textContent='FRAME FEED';$('#mbFrames').classList.add('act');$('#mbStream').classList.remove('act');}
 function setLiveIframe(url){$('#liveIdle').style.display='none';$('#liveImg').style.display='none';const f=$('#liveIframe');f.style.display='block';f.src=url;$('#liveRec').style.display='flex';$('#liveModeLbl').textContent='VNC STREAM';$('#mbStream').classList.add('act');$('#mbFrames').classList.remove('act');}
 function stopPoll(){if(S.pollTimer){clearInterval(S.pollTimer);S.pollTimer=null;}}
-function startDeskPoll(){stopPoll();S.liveMode='frames';S.pollTimer=setInterval(async()=>{if(S.polling||!S.desk)return;S.polling=true;try{const shot=await S.desk.screenshot();setLiveImg(URL.createObjectURL(new Blob([shot],{type:'image/png'})));}catch(e){}finally{S.polling=false;}},2500);}
-function startBrowserPoll(){stopPoll();S.liveMode='frames';S.pollTimer=setInterval(async()=>{if(S.polling||!S.cdp)return;S.polling=true;try{const r=await S.cdp.send('Page.captureScreenshot',{format:'png'});setLiveImg('data:image/png;base64,'+r.data);}catch(e){}finally{S.polling=false;}},2200);}
+function startDeskPoll(){stopPoll();S.liveMode='frames';S.pollTimer=setInterval(async()=>{if(S.polling||!S.desk)return;S.polling=true;try{const shot=await S.desk.screenshot();setLiveImg(URL.createObjectURL(new Blob([shot],{type:'image/png'})));}catch(e){}finally{S.polling=false;}},3000);}
+function startBrowserPoll(){stopPoll();S.liveMode='frames';S.pollTimer=setInterval(async()=>{if(S.polling||!S.cdp)return;S.polling=true;try{const r=await S.cdp.send('Page.captureScreenshot',{format:'png'});setLiveImg('data:image/png;base64,'+r.data);}catch(e){}finally{S.polling=false;}},2500);}
 async function deskStreamBtn(silent){try{if(!S.desk)await createDesktop();stepNow('starting vnc…');try{await S.desk.stream.start();}catch(e){}const url=S.desk.stream.getUrl();S.vncUrl=url;setLiveIframe(url);stopPoll();if(!silent)toast('vnc attached','ok');}catch(e){toast('vnc failed → frame feed','err');startDeskPoll();}}
 async function deskShotBtn(){try{if(!S.desk)await createDesktop();const shot=await S.desk.screenshot();setLiveImg(URL.createObjectURL(new Blob([shot],{type:'image/png'})));stopPoll();startDeskPoll();}catch(e){toast('screenshot: '+e.message,'err');}}
 async function browserShotBtn(){try{if(!S.cdp)await ensureBrowser(true);const r=await S.cdp.send('Page.captureScreenshot',{format:'png'});const src='data:image/png;base64,'+r.data;setLiveImg(src);stopPoll();startBrowserPoll();return src;}catch(e){toast('frame: '+e.message,'err');}}
@@ -699,7 +747,7 @@ $('#mbStream').addEventListener('click',async()=>{if(S.desk)await deskStreamBtn(
 $('#mbFrames').addEventListener('click',async()=>{if(S.cdp){await browserShotBtn();}else if(S.desk){startDeskPoll();}else toast('boot a sandbox first','err');});
 $('#mbRefresh').addEventListener('click',async()=>{if(S.liveMode==='frames'){if(S.cdp)await browserShotBtn();else if(S.desk)await deskShotBtn();}else if(S.liveMode==='stream'&&S.vncUrl)setLiveIframe(S.vncUrl);});
 
-/* ---------- CDP ---------- */
+/* ---------- CDP (via proxy for /json, direct websocket) ---------- */
 class CDPSession{
   constructor(){this.ws=null;this.id=0;this.pending=new Map();}
   connect(url){return new Promise((res,rej)=>{this.ws=new WebSocket(url);const t=setTimeout(()=>rej(new Error('ws timeout')),15000);this.ws.onopen=()=>{clearTimeout(t);res();};this.ws.onerror=()=>{clearTimeout(t);rej(new Error('ws error'));};this.ws.onmessage=m=>{let d;try{d=JSON.parse(m.data);}catch(e){return;}if(d.id&&this.pending.has(d.id)){const p=this.pending.get(d.id);this.pending.delete(d.id);d.error?p.rej(new Error(d.error.message)):p.res(d.result);}};});}
@@ -707,12 +755,13 @@ class CDPSession{
   close(){try{this.ws&&this.ws.close();}catch(e){}}
 }
 async function cdpAttach(sbx){
-  const host=sbx.getHost(9223);const base='https://'+host;
-  stepNow('attaching CDP @ '+host);
-  let targets=[];for(let i=0;i<10;i++){try{const r=await fetchT(base+'/json',{},5000);targets=await r.json();break;}catch(e){await sleep(1200);}}
-  if(!targets.length)throw new Error('CDP unreachable on port 9223');
+  const host=sbx.getHost(9223);
+  stepNow('attaching CDP …');
+  let targets=[];
+  for(let i=0;i<10;i++){try{const r=await fetchT(`/api/cdp/${sbx.sandboxId}/json`,{headers:{'X-Novita-Domain':S.domain,'X-Novita-Key':S.apiKey}},6000);targets=await r.json();break;}catch(e){await sleep(1200);}}
+  if(!targets.length)throw new Error('CDP unreachable');
   let page=targets.find(t=>t.type==='page');
-  if(!page){try{let r=await fetchT(base+'/json/new?about:blank',{method:'PUT'});if(!r.ok)r=await fetchT(base+'/json/new?about:blank');page=await r.json();}catch(e){throw new Error('no page target');}}
+  if(!page){try{const r=await fetchT(`/api/cdp/${sbx.sandboxId}/json/new?about:blank`,{method:'PUT',headers:{'X-Novita-Domain':S.domain,'X-Novita-Key':S.apiKey}});page=await r.json();}catch(e){throw new Error('no page target');}}
   const path=(page.webSocketDebuggerUrl||'').replace(/^wss?:\/\/[^\/]+/,'');
   const sess=new CDPSession();await sess.connect('wss://'+host+path);
   await sess.send('Page.enable');await sess.send('Runtime.enable');
@@ -760,10 +809,10 @@ $$('[data-cmd]').forEach(b=>b.addEventListener('click',()=>termRun(b.dataset.cmd
 
 /* ---------- files ---------- */
 async function fileSbx(){if(S.desk)return S.desk;if(!S.base)await createBase();return S.base;}
-async function listDir(p){const path=p||$('#pathInp').value.trim()||'/home/user';$('#pathInp').value=path;const box=$('#fileList');box.innerHTML='<div class="file-row">loading…</div>';try{const sbx=await fileSbx();const entries=await sbx.files.list(path);box.innerHTML='';const arr=Array.isArray(entries)?entries:(entries&&entries.files)||[];if(!arr.length)box.innerHTML='<div class="file-row">empty</div>';for(const e of arr){const row=document.createElement('div');row.className='file-row';const isDir=e.type==='dir'||e.isDir;row.innerHTML='<span class="ic">'+(isDir?'📁':'')+'</span><span>'+esc(e.name)+'</span>';row.addEventListener('click',()=>{const np=path.replace(/\/$/,'')+'/'+e.name;if(isDir)listDir(np);else{$('#editPath').value=np;readFile();}});box.appendChild(row);}}catch(e){box.innerHTML='<div class="file-row">'+esc(e.message)+'</div>';}}
+async function listDir(p){const path=p||$('#pathInp').value.trim()||'/home/user';$('#pathInp').value=path;const box=$('#fileList');box.innerHTML='<div class="file-row">loading…</div>';try{const sbx=await fileSbx();const entries=await sbx.files.list(path);box.innerHTML='';if(!entries.length)box.innerHTML='<div class="file-row">empty</div>';for(const e of entries){const row=document.createElement('div');row.className='file-row';const isDir=e.type==='dir';row.innerHTML='<span class="ic">'+(isDir?'📁':'')+'</span><span>'+esc(e.name)+'</span>';row.addEventListener('click',()=>{const np=path.replace(/\/$/,'')+'/'+e.name;if(isDir)listDir(np);else{$('#editPath').value=np;readFile();}});box.appendChild(row);}}catch(e){box.innerHTML='<div class="file-row">'+esc(e.message)+'</div>';}}
 $('#filesGo').addEventListener('click',()=>listDir());
 $('#filesUp').addEventListener('click',()=>{const p=$('#pathInp').value.replace(/\/$/,'');const i=p.lastIndexOf('/');listDir(p.slice(0,Math.max(1,i))||'/');});
-async function readFile(){try{const sbx=await fileSbx();const c=await sbx.files.read($('#editPath').value.trim(),{format:'text'});$('#editBody').value=typeof c==='string'?c:(c.content||c.data||'');toast('read ✔','ok');}catch(e){toast('read: '+e.message,'err');}}
+async function readFile(){try{const sbx=await fileSbx();$('#editBody').value=await sbx.files.read($('#editPath').value.trim());toast('read ✔','ok');}catch(e){toast('read: '+e.message,'err');}}
 async function writeFile(){try{const sbx=await fileSbx();const p=$('#editPath').value.trim();if(!p)return toast('set path','err');await sbx.files.write(p,$('#editBody').value);toast('wrote ✔','ok');}catch(e){toast('write: '+e.message,'err');}}
 async function mkDir(){try{const sbx=await fileSbx();const p=$('#editPath').value.trim()||$('#pathInp').value+'/new-dir';await sbx.files.makeDir(p);toast('mkdir ✔','ok');listDir($('#pathInp').value);}catch(e){toast('mkdir: '+e.message,'err');}}
 async function rmFile(){try{const sbx=await fileSbx();const p=$('#editPath').value.trim();if(!p)return toast('set path','err');if(!confirm('Delete '+p+' ?'))return;await sbx.files.remove(p);toast('deleted ✔','ok');listDir($('#pathInp').value);}catch(e){toast('rm: '+e.message,'err');}}
@@ -820,13 +869,16 @@ async function geminiPlan(text){
     else if(S.desk){const shot=await S.desk.screenshot();let bin='';for(let i=0;i<shot.length;i+=0x8000){bin+=String.fromCharCode.apply(null,shot.subarray(i,i+0x8000));}screenshotBase64=btoa(bin);}
   }catch(e){}
   const SYS='You are NEXUS, an AI agent with sandbox computers. Reply ONLY with valid JSON. For tasks return {"title":string,"steps":[...]} using ONLY: {"a":"search","query"} {"a":"browser_open","url"} {"a":"browser_scan"} {"a":"browser_fill","index","value"} {"a":"browser_click","filter"} {"a":"browser_js","expr"} {"a":"login","url","user","pass"} {"a":"signup","url","user","pass"} {"a":"desktop_click","x","y"} {"a":"desktop_type","text"} {"a":"desktop_press","key"} {"a":"desktop_scroll","dir","amount"} {"a":"screenshot"} {"a":"shell","command"} {"a":"code","language","code"} {"a":"install","pkg"} {"a":"wait","ms"} {"a":"say","text"} {"a":"kill_all"}. For chit-chat return {"reply":string}. Never invent credentials. Keep plans 1-6 steps.';
-  const parts=[{text}];
-  if(screenshotBase64)parts.unshift({inlineData:{mimeType:'image/png',data:screenshotBase64}});
-  const j=await geminiPost('models/'+encodeURIComponent(model)+':generateContent',{
-    systemInstruction:{parts:[{text:SYS}]},
-    contents:[{role:'user',parts}],
-    generationConfig:{temperature:0.2,maxOutputTokens:1500,responseMimeType:'application/json'}
-  });
+  const build=withSys=>{
+    const parts=[{text}];
+    if(screenshotBase64)parts.unshift({inlineData:{mimeType:'image/png',data:screenshotBase64}});
+    const body={contents:[{role:'user',parts}],generationConfig:{temperature:0.2,maxOutputTokens:1500,responseMimeType:'application/json'}};
+    if(withSys)body.systemInstruction={parts:[{text:SYS}]};
+    return body;
+  };
+  let j;
+  try{j=await geminiPost('models/'+encodeURIComponent(model)+':generateContent',build(true));}
+  catch(e){j=await geminiPost('models/'+encodeURIComponent(model)+':generateContent',build(false));}
   let c=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts&&j.candidates[0].content.parts[0].text)||'';
   if(!c)throw new Error('empty Gemini response');
   c=c.trim().replace(/^```(json)?/,'').replace(/```$/,'').trim();
@@ -899,12 +951,12 @@ $('#tabTerminal').addEventListener('click',()=>switchSide('terminal'));
 $('#tabFiles').addEventListener('click',()=>switchSide('files'));
 $('#tabSettings').addEventListener('click',()=>switchSide('settings'));
 
-/* ---------- init (each guarded so one failure can't kill the app) ---------- */
-try{updChips();}catch(e){console.error('init chips',e);}
-try{populateSettingsFromLS();}catch(e){console.error('init settings',e);}
-try{updateBadges();}catch(e){console.error('init badges',e);}
+/* ---------- init ---------- */
+try{updChips();}catch(e){}
+try{populateSettingsFromLS();}catch(e){}
+try{updateBadges();}catch(e){}
 try{fetchT('/api/version',{},5000).then(r=>r.json()).then(j=>{$('#gateVer').textContent='v'+APP_VERSION+' / server '+j.v;}).catch(()=>{$('#gateVer').textContent='v'+APP_VERSION;});}catch(e){}
 console.log('AGENT//DECK v'+APP_VERSION+' loaded ✔');
 </script>
 </body>
-                                                                                </html>
+  </html>
