@@ -762,19 +762,47 @@ async function cdpAttach(sbx){
   const host=sbx.getHost(9223);
   stepNow('attaching CDP via proxy …');
   let targets=[];
-  for(let i=0;i<10;i++){try{const r=await fetchT(`/api/cdp/${sbx.sandboxId}/json`,{headers:{'X-Novita-Domain':sbx.sbxDomain||S.domain,'X-Novita-Key':S.apiKey}},6000);targets=await r.json();break;}catch(e){await sleep(1200);}}
-  if(!targets.length)throw new Error('CDP unreachable');
+  for(let i=0;i<10;i++){
+    try{
+      const r=await fetchT(`/api/cdp/${sbx.sandboxId}/json`,{headers:{'X-Novita-Domain':sbx.sbxDomain||S.domain,'X-Novita-Key':S.apiKey}},6000);
+      targets=await r.json();
+      break;
+    }catch(e){await sleep(1200);}
+  }
+  if(!targets.length)throw new Error('CDP unreachable (no /json targets)');
+  
   let page=targets.find(t=>t.type==='page');
-  if(!page){try{const r=await fetchT(`/api/cdp/${sbx.sandboxId}/json/new?about:blank`,{method:'PUT',headers:{'X-Novita-Domain':sbx.sbxDomain||S.domain,'X-Novita-Key':S.apiKey}});page=await r.json();}catch(e){throw new Error('no page target');}}
-  const origPath=(page.webSocketDebuggerUrl||'').replace(/^wss?:\/\/[^\/]+/,'');
+  if(!page){
+    try{
+      const r=await fetchT(`/api/cdp/${sbx.sandboxId}/json/new?about:blank`,{method:'PUT',headers:{'X-Novita-Domain':sbx.sbxDomain||S.domain,'X-Novita-Key':S.apiKey}});
+      page=await r.json();
+    }catch(e){throw new Error('no page target and could not create one');}
+  }
+  
+  // Extract the path from webSocketDebuggerUrl
+  const debugUrl=page.webSocketDebuggerUrl||'';
+  let wsPath=debugUrl.replace(/^wss?:\/\/[^\/]+/, '');
+  if(!wsPath.startsWith('/'))wsPath='/devtools/page/'+(page.id||'');
+  
+  // Build the proxied WebSocket URL
   const wsScheme=location.protocol==='https:'?'wss:':'ws:';
-  const wsUrl=`${wsScheme}//${location.host}/ws/cdp/${sbx.sandboxId}${origPath.startsWith('/')?origPath:'/devtools/page/'+(page.id||'')}`;
+  const wsUrl=`${wsScheme}//${location.host}/ws/cdp/${sbx.sandboxId}${wsPath}`;
+  
+  console.log('CDP attach: debugUrl=', debugUrl);
+  console.log('CDP attach: wsPath=', wsPath);
+  console.log('CDP attach: wsUrl=', wsUrl);
+  
   const sess=new CDPSession();
-  await sess.connect(wsUrl);
-  await sess.send('Page.enable');
-  await sess.send('Runtime.enable');
-  S.cdp=sess;S.cdpHost=host;
-}
+  try{
+    await sess.connect(wsUrl);
+    await sess.send('Page.enable');
+    await sess.send('Runtime.enable');
+    S.cdp=sess;
+    S.cdpHost=host;
+  }catch(e){
+    throw new Error('WebSocket connect failed: '+e.message+' (check server logs)');
+  }
+  }
 async function ensureBrowser(manual){if(S.cdp)return S.cdp;if(!S.browserSbx)await createBrowser();await cdpAttach(S.browserSbx);if(manual)toast('chrome attached ✔','ok');return S.cdp;}
 async function cdpEval(expr){const r=await S.cdp.send('Runtime.evaluate',{expression:expr,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw new Error((r.exceptionDetails.exception&&r.exceptionDetails.exception.description)||'JS error');return r.result?r.result.value:undefined;}
 async function cdpNavigate(url){stepNow('navigating → '+url);await S.cdp.send('Page.navigate',{url});for(let i=0;i<40;i++){await sleep(500);try{const r=await S.cdp.send('Runtime.evaluate',{expression:'document.readyState',returnByValue:true});if(r.result.value==='complete')break;}catch(e){}}await sleep(800);}
